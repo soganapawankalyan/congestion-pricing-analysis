@@ -2,7 +2,7 @@
 
 An independent look at New York's congestion pricing using only public data. Three questions: **how much traffic left, did drivers shift when they travel, and did traffic move to other roads?**
 
-**Live dashboard:** _(add the link after enabling GitHub Pages)_
+**Live dashboard:** [soganapawankalyan.github.io/congestion-pricing-analysis/dashboard](https://soganapawankalyan.github.io/congestion-pricing-analysis/dashboard/)
 
 > Independent portfolio project. The data is public (New York State open data). The MTA is mentioned for context only and is not affiliated with this work. A conference slide cited roughly 8% to 14% fewer vehicles entering the zone per day against an October 2023 baseline. I did not verify that figure, and it covers all entry points, which this analysis cannot see.
 
