@@ -1,0 +1,748 @@
+{
+ "volume": [
+  {
+   "unit": "Both tunnels into Manhattan (combined)",
+   "first_year_pct": -3.261922748021806,
+   "after_first_year_pct": -4.462806703736399,
+   "all_post_pct": -3.770792953876756,
+   "post_weeks": 90,
+   "pre_noise_sd_pct": 6.324184973170121
+  },
+  {
+   "unit": "Queens-Midtown Tunnel (into Manhattan)",
+   "first_year_pct": -2.3655043328814407,
+   "after_first_year_pct": -4.660950212998549,
+   "all_post_pct": -3.3842091531115948,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 5.601920998218123
+  },
+  {
+   "unit": "Hugh L. Carey Tunnel (into Manhattan)",
+   "first_year_pct": -4.522222197711323,
+   "after_first_year_pct": -4.479522375008605,
+   "all_post_pct": -4.504195712413949,
+   "post_weeks": 90,
+   "pre_noise_sd_pct": 8.88115975008154
+  },
+  {
+   "unit": "Queens-Midtown Tunnel (out of Manhattan)",
+   "first_year_pct": -2.9350738590355085,
+   "after_first_year_pct": -2.810816577925923,
+   "all_post_pct": -2.8803133595936337,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 8.56395313091467
+  },
+  {
+   "unit": "Hugh L. Carey Tunnel (out of Manhattan)",
+   "first_year_pct": -3.987238260844872,
+   "after_first_year_pct": -4.892964216581241,
+   "all_post_pct": -4.376457941135314,
+   "post_weeks": 91,
+   "pre_noise_sd_pct": 8.73561383804824
+  },
+  {
+   "unit": "Henry Hudson Bridge (into Manhattan)",
+   "first_year_pct": 0.7173325960235122,
+   "after_first_year_pct": 1.3596281737862759,
+   "all_post_pct": 0.999991985264681,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 5.438603651172725
+  },
+  {
+   "unit": "RFK Bridge from Bronx (into Manhattan/Queens)",
+   "first_year_pct": 3.1390528081339575,
+   "after_first_year_pct": 4.669152026370282,
+   "all_post_pct": 3.81083630678547,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 4.057618132975633
+  }
+ ],
+ "placebo_space": [
+  {
+   "unit": "Bronx - Whitestone Bridge | Northbound to Bronx",
+   "first_year_pct": -2.1753536669625095,
+   "after_first_year_pct": -1.8651186278697107,
+   "all_post_pct": -2.0387044434498236,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 4.9789355086367895
+  },
+  {
+   "unit": "Bronx - Whitestone Bridge | Southbound to Queens",
+   "first_year_pct": 1.9833922447009211,
+   "after_first_year_pct": 1.6705880804731121,
+   "all_post_pct": 1.8453708931505775,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 4.413569691131108
+  },
+  {
+   "unit": "Cross Bay Bridge | Northbound",
+   "first_year_pct": -0.7223435399113853,
+   "after_first_year_pct": -3.874557099346676,
+   "all_post_pct": -2.1245727878088427,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 5.646712136206031
+  },
+  {
+   "unit": "Cross Bay Bridge | Southbound",
+   "first_year_pct": -0.9788823405326719,
+   "after_first_year_pct": -4.320388471443004,
+   "all_post_pct": -2.4661664461421706,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 6.427855855393768
+  },
+  {
+   "unit": "Marine Parkway Bridge | Northbound to Brooklyn",
+   "first_year_pct": 1.1476536483559396,
+   "after_first_year_pct": 1.808325950832801,
+   "all_post_pct": 1.4383877070187845,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 4.890001835189964
+  },
+  {
+   "unit": "Marine Parkway Bridge | Southbound to Queens",
+   "first_year_pct": 0.11673446688356126,
+   "after_first_year_pct": 0.32259644957133293,
+   "all_post_pct": 0.2074387085889251,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 5.148087217250148
+  },
+  {
+   "unit": "Throgs Neck Bridge | Northbound to Bronx",
+   "first_year_pct": 3.5043510301123515,
+   "after_first_year_pct": 5.261613259675624,
+   "all_post_pct": 4.27541302785428,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 8.75759738936911
+  },
+  {
+   "unit": "Throgs Neck Bridge | Southbound to Queens",
+   "first_year_pct": -0.9376674680142805,
+   "after_first_year_pct": 1.5647177209052066,
+   "all_post_pct": 0.15784430107346203,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 7.440984159373835
+  },
+  {
+   "unit": "Verrazzano - Narrows Bridge | Eastbound to Brooklyn",
+   "first_year_pct": -1.08058748897073,
+   "after_first_year_pct": 0.19244019905122478,
+   "all_post_pct": -0.5213660620572935,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 2.859600885756578
+  },
+  {
+   "unit": "Verrazzano - Narrows Bridge | Westbound to Staten Island",
+   "first_year_pct": -0.7268629271890203,
+   "after_first_year_pct": -0.3921413608323876,
+   "all_post_pct": -0.5794363621805076,
+   "post_weeks": 93,
+   "pre_noise_sd_pct": 4.289090326863711
+  }
+ ],
+ "p_space": 0.18181818181818182,
+ "placebo_time_pct": -1.1342028725890185,
+ "boundaries": [
+  [
+   "30",
+   "Overnight",
+   "Peak"
+  ],
+  [
+   "126",
+   "Peak",
+   "Overnight"
+  ]
+ ],
+ "timing": [
+  {
+   "group": "Buses / motorcycles",
+   "boundary": "05:00",
+   "change": "Overnight -> Peak",
+   "jump_pct": 57.59965593292715,
+   "ci90_lo": 54.73018070495535,
+   "ci90_hi": 60.49225108500904,
+   "robust_min": -6.637302955409075,
+   "robust_max": 193.82615491931773,
+   "fake_boundary_abs_p90": 13.830491707589813,
+   "clears_fake_p90": true,
+   "same_sign_all_settings": false,
+   "linear_jump_pct": 14.611033057917403,
+   "entries_per_10min_just_before": 17.92147793726741,
+   "entries_per_10min_just_after": 20.539991003148927,
+   "daily_entries_in_group": 11083.298245614034
+  },
+  {
+   "group": "Buses / motorcycles",
+   "boundary": "21:00",
+   "change": "Peak -> Overnight",
+   "jump_pct": 2.1193322988279473,
+   "ci90_lo": 0.8544279827159684,
+   "ci90_hi": 3.2594858550316315,
+   "robust_min": -7.636712751122587,
+   "robust_max": 6.92545881193638,
+   "fake_boundary_abs_p90": 13.830491707589813,
+   "clears_fake_p90": false,
+   "same_sign_all_settings": false,
+   "linear_jump_pct": 7.819798713028824,
+   "entries_per_10min_just_before": 39.39968102073366,
+   "entries_per_10min_just_after": 42.48065677013045,
+   "daily_entries_in_group": 11083.298245614034
+  },
+  {
+   "group": "Cars, pickups, vans",
+   "boundary": "05:00",
+   "change": "Overnight -> Peak",
+   "jump_pct": -31.410093573998697,
+   "ci90_lo": -31.989382034952627,
+   "ci90_hi": -30.862920395552813,
+   "robust_min": -63.60727748262176,
+   "robust_max": 15.537936495377469,
+   "fake_boundary_abs_p90": 4.818591171725508,
+   "clears_fake_p90": true,
+   "same_sign_all_settings": false,
+   "linear_jump_pct": -29.474909428867456,
+   "entries_per_10min_just_before": 1313.8981924508241,
+   "entries_per_10min_just_after": 926.6278902384171,
+   "daily_entries_in_group": 276243.1859649123
+  },
+  {
+   "group": "Cars, pickups, vans",
+   "boundary": "21:00",
+   "change": "Peak -> Overnight",
+   "jump_pct": 27.85895097933917,
+   "ci90_lo": 26.996341596666195,
+   "ci90_hi": 28.731791471566932,
+   "robust_min": 27.85895097933917,
+   "robust_max": 34.73866107690861,
+   "fake_boundary_abs_p90": 4.818591171725508,
+   "clears_fake_p90": true,
+   "same_sign_all_settings": true,
+   "linear_jump_pct": 30.781090153906245,
+   "entries_per_10min_just_before": 1325.5629984051038,
+   "entries_per_10min_just_after": 1733.5857399910017,
+   "daily_entries_in_group": 276243.1859649123
+  },
+  {
+   "group": "Taxi / for-hire",
+   "boundary": "05:00",
+   "change": "Overnight -> Peak",
+   "jump_pct": 13.09960604520024,
+   "ci90_lo": 12.422224005753998,
+   "ci90_hi": 13.830411052889307,
+   "robust_min": -9.380966317939398,
+   "robust_max": 51.15157087216866,
+   "fake_boundary_abs_p90": 5.081795780567333,
+   "clears_fake_p90": true,
+   "same_sign_all_settings": false,
+   "linear_jump_pct": 7.375020665431271,
+   "entries_per_10min_just_before": 502.34322169059027,
+   "entries_per_10min_just_after": 539.3911381016645,
+   "daily_entries_in_group": 187710.36842105264
+  },
+  {
+   "group": "Taxi / for-hire",
+   "boundary": "21:00",
+   "change": "Peak -> Overnight",
+   "jump_pct": 4.233128108344508,
+   "ci90_lo": 3.679954787305052,
+   "ci90_hi": 4.7214215170652,
+   "robust_min": -0.8421371566681102,
+   "robust_max": 6.497627813195739,
+   "fake_boundary_abs_p90": 5.081795780567333,
+   "clears_fake_p90": false,
+   "same_sign_all_settings": false,
+   "linear_jump_pct": 4.237146142123487,
+   "entries_per_10min_just_before": 1785.9216374269006,
+   "entries_per_10min_just_after": 1861.5937471884831,
+   "daily_entries_in_group": 187710.36842105264
+  },
+  {
+   "group": "Trucks",
+   "boundary": "05:00",
+   "change": "Overnight -> Peak",
+   "jump_pct": 21.38023983587147,
+   "ci90_lo": 20.43767575603489,
+   "ci90_hi": 22.263777832333012,
+   "robust_min": -10.455198255228627,
+   "robust_max": 47.76904740165742,
+   "fake_boundary_abs_p90": 5.737668178477806,
+   "clears_fake_p90": true,
+   "same_sign_all_settings": false,
+   "linear_jump_pct": 28.82685935705794,
+   "entries_per_10min_just_before": 161.49043062200957,
+   "entries_per_10min_just_after": 208.0430499325235,
+   "daily_entries_in_group": 23528.968421052632
+  },
+  {
+   "group": "Trucks",
+   "boundary": "21:00",
+   "change": "Peak -> Overnight",
+   "jump_pct": 4.627824647674794,
+   "ci90_lo": 3.5792045128615038,
+   "ci90_hi": 5.875121000704582,
+   "robust_min": 1.7455316017205735,
+   "robust_max": 7.199474006504669,
+   "fake_boundary_abs_p90": 5.737668178477806,
+   "clears_fake_p90": false,
+   "same_sign_all_settings": true,
+   "linear_jump_pct": 4.205533267667956,
+   "entries_per_10min_just_before": 65.40808080808081,
+   "entries_per_10min_just_after": 68.15883940620779,
+   "daily_entries_in_group": 23528.968421052632
+  },
+  {
+   "group": "All vehicles",
+   "boundary": "05:00",
+   "change": "Overnight -> Peak",
+   "jump_pct": -13.754927068894085,
+   "ci90_lo": -14.34143445722454,
+   "ci90_hi": -13.130398292369744,
+   "robust_min": -47.480741788580836,
+   "robust_max": 34.32655455857727,
+   "fake_boundary_abs_p90": 4.069643817049132,
+   "clears_fake_p90": true,
+   "same_sign_all_settings": false,
+   "linear_jump_pct": -15.085348241623855,
+   "entries_per_10min_just_before": 1995.6533227006908,
+   "entries_per_10min_just_after": 1694.602069275754,
+   "daily_entries_in_group": 498565.8210526316
+  },
+  {
+   "group": "All vehicles",
+   "boundary": "21:00",
+   "change": "Peak -> Overnight",
+   "jump_pct": 14.60952448405064,
+   "ci90_lo": 14.062336108238977,
+   "ci90_hi": 15.142430064642245,
+   "robust_min": 12.273175532536529,
+   "robust_max": 19.10491256105946,
+   "fake_boundary_abs_p90": 4.069643817049132,
+   "clears_fake_p90": true,
+   "same_sign_all_settings": true,
+   "linear_jump_pct": 15.22021399705552,
+   "entries_per_10min_just_before": 3216.292397660819,
+   "entries_per_10min_just_after": 3705.8189833558235,
+   "daily_entries_in_group": 498565.8210526316
+  }
+ ],
+ "robustness": [
+  {
+   "spec": "Main: all weeks, 2023-24 baseline",
+   "first_year_pct": -3.261922748021806,
+   "all_post_pct": -3.770792953876756,
+   "pre_noise_sd_pct": 6.324184973170121,
+   "post_weeks": 90,
+   "placebo_min": -2.1753536669625095,
+   "placebo_max": 3.5043510301123515,
+   "placebo_sd": 1.7104492323694807,
+   "n_placebos": 10,
+   "p_value": 0.18181818181818182
+  },
+  {
+   "spec": "All weeks, baseline from Jul 2022",
+   "first_year_pct": -3.350277669906032,
+   "all_post_pct": -3.8204465475496274,
+   "pre_noise_sd_pct": 6.184621218583337,
+   "post_weeks": 90,
+   "placebo_min": -3.0758725942357845,
+   "placebo_max": 5.547231251461304,
+   "placebo_sd": 2.3556135209342948,
+   "n_placebos": 10,
+   "p_value": 0.18181818181818182
+  },
+  {
+   "spec": "Tue-Thu, holiday periods removed",
+   "first_year_pct": -4.088345753018274,
+   "all_post_pct": -4.845143690720111,
+   "pre_noise_sd_pct": 5.55758132075849,
+   "post_weeks": 75,
+   "placebo_min": -2.354303202017982,
+   "placebo_max": 3.7526178523239473,
+   "placebo_sd": 2.01442317657883,
+   "n_placebos": 10,
+   "p_value": 0.09090909090909091
+  },
+  {
+   "spec": "Tue-Thu clean, baseline from Jul 2022",
+   "first_year_pct": -4.040212541406829,
+   "all_post_pct": -4.775527122615997,
+   "pre_noise_sd_pct": 5.3889262359242665,
+   "post_weeks": 75,
+   "placebo_min": -2.8394591841945815,
+   "placebo_max": 5.427812616509575,
+   "placebo_sd": 2.2927493254954445,
+   "n_placebos": 10,
+   "p_value": 0.18181818181818182
+  },
+  {
+   "spec": "Tue-Thu clean, without donor Cross Bay Bridge",
+   "first_year_pct": -4.169738648497434,
+   "all_post_pct": -5.244858650120044,
+   "pre_noise_sd_pct": 5.1543966422176215,
+   "post_weeks": 75,
+   "placebo_min": -2.422451561900485,
+   "placebo_max": 3.6802073829226956,
+   "placebo_sd": 2.282980166795065,
+   "n_placebos": 8,
+   "p_value": 0.1111111111111111
+  },
+  {
+   "spec": "Tue-Thu clean, without donor Marine Parkway Bridge",
+   "first_year_pct": -4.003435999411531,
+   "all_post_pct": -4.713851862232666,
+   "pre_noise_sd_pct": 5.73893647388453,
+   "post_weeks": 75,
+   "placebo_min": -2.19660645852926,
+   "placebo_max": 3.920177207218911,
+   "placebo_sd": 2.286320411506219,
+   "n_placebos": 8,
+   "p_value": 0.1111111111111111
+  },
+  {
+   "spec": "Tue-Thu clean, without donor Verrazzano - Narrows Bridge",
+   "first_year_pct": -4.291122427221583,
+   "all_post_pct": -4.991626490613477,
+   "pre_noise_sd_pct": 12.451985534227271,
+   "post_weeks": 75,
+   "placebo_min": -2.587212744599632,
+   "placebo_max": 3.5051417672730345,
+   "placebo_sd": 2.192343489736336,
+   "n_placebos": 8,
+   "p_value": 0.1111111111111111
+  },
+  {
+   "spec": "Tue-Thu clean, without donor Throgs Neck Bridge",
+   "first_year_pct": -3.963439233156063,
+   "all_post_pct": -4.554558010933441,
+   "pre_noise_sd_pct": 5.990363484237077,
+   "post_weeks": 75,
+   "placebo_min": -1.9724738923340812,
+   "placebo_max": 3.221032362353915,
+   "placebo_sd": 1.567846170242899,
+   "n_placebos": 8,
+   "p_value": 0.1111111111111111
+  },
+  {
+   "spec": "Tue-Thu clean, without donor Bronx - Whitestone Bridge",
+   "first_year_pct": -4.013595303665507,
+   "all_post_pct": -4.719252184709621,
+   "pre_noise_sd_pct": 5.789123409275515,
+   "post_weeks": 75,
+   "placebo_min": -2.2104069094976198,
+   "placebo_max": 3.9055136535502966,
+   "placebo_sd": 1.8231199191096341,
+   "n_placebos": 8,
+   "p_value": 0.1111111111111111
+  }
+ ],
+ "reconciliation": [
+  {
+   "month": "2025-01",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "759087",
+   "bt_file": "728701.0",
+   "ratio": "1.041698858653961"
+  },
+  {
+   "month": "2025-02",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "833920",
+   "bt_file": "808392.0",
+   "ratio": "1.0315787390276006"
+  },
+  {
+   "month": "2025-03",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "973904",
+   "bt_file": "952220.0",
+   "ratio": "1.0227720484761924"
+  },
+  {
+   "month": "2025-04",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "947754",
+   "bt_file": "938037.0",
+   "ratio": "1.0103588664413024"
+  },
+  {
+   "month": "2025-05",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "1015271",
+   "bt_file": "1002795.0",
+   "ratio": "1.0124412267711747"
+  },
+  {
+   "month": "2025-06",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "982848",
+   "bt_file": "950610.0",
+   "ratio": "1.0339129611512607"
+  },
+  {
+   "month": "2025-07",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "960041",
+   "bt_file": "929282.0",
+   "ratio": "1.0330997479774708"
+  },
+  {
+   "month": "2025-08",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "994200",
+   "bt_file": "978518.0",
+   "ratio": "1.0160262764711534"
+  },
+  {
+   "month": "2025-09",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "982280",
+   "bt_file": "948748.0",
+   "ratio": "1.0353434210137993"
+  },
+  {
+   "month": "2025-10",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "1019639",
+   "bt_file": "993847.0",
+   "ratio": "1.0259516806912936"
+  },
+  {
+   "month": "2025-11",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "976446",
+   "bt_file": "949497.0",
+   "ratio": "1.0283823961529104"
+  },
+  {
+   "month": "2025-12",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "973034",
+   "bt_file": "949939.0",
+   "ratio": "1.0243120874077178"
+  },
+  {
+   "month": "2026-01",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "838821",
+   "bt_file": "823907.0",
+   "ratio": "1.0181015575787074"
+  },
+  {
+   "month": "2026-02",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "781060",
+   "bt_file": "763400.0",
+   "ratio": "1.0231333507990568"
+  },
+  {
+   "month": "2026-03",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "949419",
+   "bt_file": "951172.0",
+   "ratio": "0.9981570105091403"
+  },
+  {
+   "month": "2026-04",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "916088",
+   "bt_file": "923272.0",
+   "ratio": "0.992218977722708"
+  },
+  {
+   "month": "2026-05",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "976172",
+   "bt_file": "978185.0",
+   "ratio": "0.9979421070656369"
+  },
+  {
+   "month": "2026-06",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "986219",
+   "bt_file": "977074.0",
+   "ratio": "1.0093595776778421"
+  },
+  {
+   "month": "2026-07",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "948278",
+   "bt_file": "955455.0",
+   "ratio": "0.9924883955811629"
+  },
+  {
+   "month": "2026-08",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "841466",
+   "bt_file": "796308.0",
+   "ratio": "1.0567092130180784"
+  },
+  {
+   "month": "2026-09",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "914540",
+   "bt_file": "894758.0",
+   "ratio": "1.0221087713102315"
+  },
+  {
+   "month": "2026-10",
+   "tunnel": "Hugh L. Carey Tunnel",
+   "zone_file": "654008",
+   "bt_file": "655555.0",
+   "ratio": "0.9976401674916674"
+  },
+  {
+   "month": "2025-01",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1062297",
+   "bt_file": "1033588.0",
+   "ratio": "1.0277760577715687"
+  },
+  {
+   "month": "2025-02",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1155091",
+   "bt_file": "1125534.0",
+   "ratio": "1.0262604239409916"
+  },
+  {
+   "month": "2025-03",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1346429",
+   "bt_file": "1315024.0",
+   "ratio": "1.0238816934139605"
+  },
+  {
+   "month": "2025-04",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1323747",
+   "bt_file": "1372447.0",
+   "ratio": "0.9645159339486333"
+  },
+  {
+   "month": "2025-05",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1448912",
+   "bt_file": "1439925.0",
+   "ratio": "1.0062412972897894"
+  },
+  {
+   "month": "2025-06",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1414801",
+   "bt_file": "1388614.0",
+   "ratio": "1.0188583724490752"
+  },
+  {
+   "month": "2025-07",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1405530",
+   "bt_file": "1369857.0",
+   "ratio": "1.026041404321765"
+  },
+  {
+   "month": "2025-08",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1426185",
+   "bt_file": "1390205.0",
+   "ratio": "1.0258810750932417"
+  },
+  {
+   "month": "2025-09",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1419573",
+   "bt_file": "1380614.0",
+   "ratio": "1.0282186041862533"
+  },
+  {
+   "month": "2025-10",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1436178",
+   "bt_file": "1418678.0",
+   "ratio": "1.0123354277714887"
+  },
+  {
+   "month": "2025-11",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1328080",
+   "bt_file": "1308445.0",
+   "ratio": "1.0150063625142822"
+  },
+  {
+   "month": "2025-12",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1299343",
+   "bt_file": "1266928.0",
+   "ratio": "1.0255855107788288"
+  },
+  {
+   "month": "2026-01",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1190799",
+   "bt_file": "1163201.0",
+   "ratio": "1.0237259080760763"
+  },
+  {
+   "month": "2026-02",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1080824",
+   "bt_file": "1056356.0",
+   "ratio": "1.023162645926184"
+  },
+  {
+   "month": "2026-03",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1321215",
+   "bt_file": "1292706.0",
+   "ratio": "1.022053738437046"
+  },
+  {
+   "month": "2026-04",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1290052",
+   "bt_file": "1266378.0",
+   "ratio": "1.018694260323537"
+  },
+  {
+   "month": "2026-05",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1393064",
+   "bt_file": "1360015.0",
+   "ratio": "1.024300467274258"
+  },
+  {
+   "month": "2026-06",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1362373",
+   "bt_file": "1326137.0",
+   "ratio": "1.02732447703367"
+  },
+  {
+   "month": "2026-07",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1352344",
+   "bt_file": "1318640.0",
+   "ratio": "1.0255596675362495"
+  },
+  {
+   "month": "2026-08",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1334732",
+   "bt_file": "1301830.0",
+   "ratio": "1.0252736532419748"
+  },
+  {
+   "month": "2026-09",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "1325907",
+   "bt_file": "1294637.0",
+   "ratio": "1.0241534885840586"
+  },
+  {
+   "month": "2026-10",
+   "tunnel": "Queens Midtown Tunnel",
+   "zone_file": "909139",
+   "bt_file": "887900.0",
+   "ratio": "1.0239204865412772"
+  }
+ ]
+}

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Did congestion pricing really cut traffic? | NYC data analysis</title>
+<meta name="description" content="Independent analysis of NYC congestion pricing using public bridge-and-tunnel and zone-entry data.">
+<style>
+  :root { color-scheme: light;
+    --page:#f6f5f2; --surface:#fff; --surface-2:#f0efeb; --ink-1:#0b0b0b; --ink-2:#52514e; --muted:#6b6a65; --grid:#e1e0d9; --axis:#c3c2b7;
+    --border:rgba(11,11,11,.10); --hover:rgba(11,11,11,.06); --focus:#2a78d6; --accent:#2a78d6;
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --gray:#898781; --band:rgba(137,135,129,.22); }
+  :root[data-theme="dark"] { color-scheme: dark;
+    --page:#0f0f10; --surface:#1b1b1d; --surface-2:#242427; --ink-1:#f5f5f3; --ink-2:#c9c8c2; --muted:#8e8d86; --grid:#2e2e31; --axis:#3d3d41;
+    --border:rgba(255,255,255,.10); --hover:rgba(255,255,255,.08); --focus:#7db3f0; --accent:#3987e5;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --gray:#8e8d86; --band:rgba(142,141,134,.28); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--ink-1); font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  h1,h2,h3,p { margin:0; }
+  a { color:var(--focus); }
+  button { font:inherit; color:inherit; }
+  :focus-visible { outline:2px solid var(--focus); outline-offset:2px; border-radius:4px; }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 16px 56px; }
+  .bar { position:sticky; top:0; z-index:5; background:var(--page); border-bottom:1px solid var(--border); }
+  .bar .in { max-width:1120px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .bar b { font-size:.9375rem; }
+  .bar nav { display:flex; gap:4px; overflow-x:auto; }
+  .bar nav a { color:var(--ink-2); text-decoration:none; font-size:.875rem; padding:8px 10px; border-radius:6px; white-space:nowrap; }
+  .bar nav a:hover { background:var(--hover); color:var(--ink-1); }
+  .theme { min-height:36px; padding:0 14px; border:1px solid var(--border); background:var(--surface); border-radius:8px; cursor:pointer; }
+  .theme:hover { background:var(--hover); }
+  @media (pointer:coarse) { .theme, .bar nav a { min-height:44px; } }
+  header.hero { padding:40px 0 8px; }
+  .eyebrow { color:var(--accent); font-weight:700; font-size:.8125rem; letter-spacing:.08em; text-transform:uppercase; }
+  header.hero h1 { font-size:clamp(1.75rem,4.5vw,2.75rem); line-height:1.1; letter-spacing:-.02em; margin-top:8px; max-width:20ch; }
+  header.hero .lede { color:var(--ink-2); margin-top:12px; max-width:68ch; font-size:1.0625rem; }
+  .notice { margin-top:16px; padding:10px 14px; border:1px solid var(--border); background:var(--surface); border-radius:8px; color:var(--ink-2); font-size:.875rem; }
+  .cards3 { margin-top:24px; display:grid; gap:16px; grid-template-columns:minmax(0,1fr); }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; min-width:0; }
+  .find .q { color:var(--ink-2); font-size:.8125rem; font-weight:600; }
+  .find .n { font-size:2.5rem; line-height:1.1; font-weight:750; letter-spacing:-.02em; margin-top:4px; }
+  .find h3 { font-size:.9375rem; margin-top:6px; }
+  .find p { color:var(--ink-2); font-size:.875rem; margin-top:6px; }
+  .find .a { margin-top:10px; font-size:.875rem; border-top:1px solid var(--grid); padding-top:10px; }
+  h2.sec { margin-top:40px; font-size:1.25rem; scroll-margin-top:64px; }
+  .sec-sub { color:var(--ink-2); font-size:.9375rem; margin-top:4px; max-width:70ch; }
+  .grid { margin-top:16px; display:grid; gap:16px; grid-template-columns:minmax(0,1fr); }
+  @media (min-width:820px) { .cards3 { grid-template-columns:repeat(3,minmax(0,1fr)); } .grid.two { grid-template-columns:repeat(2,minmax(0,1fr)); } .span2 { grid-column:1/-1; } }
+  .card h3.t { font-size:1rem; line-height:1.3; }
+  .card .sub { color:var(--ink-2); font-size:.875rem; margin-top:2px; }
+  .card .note { color:var(--ink-2); font-size:.8125rem; margin-top:10px; }
+  .head { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start; margin-bottom:10px; }
+  .seg { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; flex-wrap:wrap; }
+  .seg button { min-height:32px; padding:0 12px; border:0; background:transparent; cursor:pointer; font-size:.8125rem; color:var(--ink-2); }
+  .seg button+button { border-left:1px solid var(--border); }
+  .seg button[aria-pressed="true"] { background:var(--hover); color:var(--ink-1); font-weight:650; }
+  @media (pointer:coarse) { .seg button { min-height:44px; } }
+  svg { display:block; width:100%; height:auto; overflow:visible; }
+  svg text { font-family:inherit; }
+  .gl { stroke:var(--grid); stroke-width:1; } .ax { stroke:var(--axis); stroke-width:1; }
+  .tk { fill:var(--ink-2); font-size:12px; } .tk.c { text-anchor:middle; } .tk.e { text-anchor:end; }
+  .lb { fill:var(--ink-1); font-size:12px; } .lb.b { font-weight:650; paint-order:stroke; stroke:var(--surface); stroke-width:4px; stroke-linejoin:round; }
+  .ref { stroke:var(--ink-2); stroke-width:1; stroke-dasharray:4 3; } .cross { stroke:var(--ink-2); stroke-width:1; }
+  .legend { display:flex; flex-wrap:wrap; gap:6px 16px; font-size:.8125rem; color:var(--ink-2); margin-bottom:8px; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; } .legend i { width:14px; height:4px; border-radius:2px; display:inline-block; }
+  .legend i.box { height:10px; background:var(--band); border-radius:2px; }
+  #tip { position:fixed; z-index:20; pointer-events:none; display:none; min-width:150px; max-width:280px; padding:8px 10px; background:var(--surface); border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,.14); font-size:.8125rem; }
+  #tip .t { font-weight:650; margin-bottom:4px; } #tip .r { display:flex; justify-content:space-between; gap:12px; } #tip .r span { color:var(--ink-2); }
+  /* dot rows */
+  .rows { display:grid; gap:2px; }
+  .row { display:grid; grid-template-columns:minmax(120px,1.2fr) minmax(0,2fr) 64px; gap:10px; align-items:center; min-height:34px; }
+  .row .l { font-size:.8125rem; color:var(--ink-2); line-height:1.25; }
+  .row .tr { position:relative; height:26px; }
+  .row .tr::before { content:""; position:absolute; left:0; right:0; top:50%; height:1px; background:var(--grid); }
+  .row .bd { position:absolute; top:4px; bottom:4px; background:var(--band); border-radius:3px; }
+  .row .z { position:absolute; top:0; bottom:0; width:1px; background:var(--ink-2); }
+  .row .dt { position:absolute; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; border:2px solid var(--surface); }
+  .row .v { text-align:right; font-weight:650; font-size:.875rem; font-variant-numeric:tabular-nums; }
+  .axisrow { display:grid; grid-template-columns:minmax(120px,1.2fr) minmax(0,2fr) 64px; gap:10px; }
+  .axisrow .ticks { position:relative; height:18px; } .axisrow .ticks span { position:absolute; transform:translateX(-50%); font-size:.75rem; color:var(--ink-2); }
+  details.twin { margin-top:12px; } details.twin summary { cursor:pointer; color:var(--ink-2); font-size:.8125rem; min-height:32px; display:flex; align-items:center; }
+  .tw { overflow-x:auto; } table { border-collapse:collapse; width:100%; font-size:.8125rem; font-variant-numeric:tabular-nums; }
+  th,td { text-align:right; padding:6px 10px; border-bottom:1px solid var(--grid); white-space:nowrap; } th:first-child,td:first-child { text-align:left; } th { color:var(--ink-2); font-weight:600; }
+  .ok { color:var(--s3); font-weight:650; } .warn { color:var(--s2); font-weight:650; }
+  ul.lim { margin:10px 0 0; padding-left:20px; color:var(--ink-2); font-size:.9375rem; } ul.lim li { margin-top:6px; } ul.lim b { color:var(--ink-1); }
+  footer { margin-top:36px; color:var(--ink-2); font-size:.8125rem; } footer p+p { margin-top:8px; }
+  .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+<div class="bar"><div class="in"><b>NYC congestion pricing</b>
+  <nav aria-label="Sections"><a href="#volume">1 Traffic</a><a href="#timing">2 Timing</a><a href="#diversion">3 Diversion</a><a href="#limits">Limits</a></nav>
+  <button class="theme" id="theme" type="button" aria-label="Switch between light and dark theme">Dark</button></div></div>
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">Independent analysis · public data</div>
+  <h1>Did congestion pricing really cut traffic?</h1>
+  <p class="lede">New York began charging most vehicles to enter Manhattan below 60th Street on January 5, 2025. Using only public bridge-and-tunnel counts and the zone's own entry data, I asked three questions: how much traffic left, did drivers change when they travel, and did traffic move to other roads.</p>
+  <p class="notice">Independent portfolio project. Data are public (MTA open data on data.ny.gov). The MTA is mentioned for context only and is not affiliated with this work.</p>
+</header>
+<section class="cards3" id="findings" aria-label="Key findings"></section>
+
+<h2 class="sec" id="volume">1. How much traffic left?</h2>
+<p class="sec-sub">Each week at the two tunnels that feed the zone is compared with the same week of the year in 2023–24, relative to far-away crossings that were never tolled. Those crossings show how much a week can drift by chance.</p>
+<div class="grid two">
+  <div class="card span2"><div class="head"><div><h3 class="t">Inbound traffic at the Queens-Midtown and Carey tunnels vs expected</h3><p class="sub">4-week average, percent difference from what the baseline implies</p></div></div>
+    <div class="legend" id="lgEvent"></div><div id="event"></div>
+    <p class="note">The grey band is the range (10th to 90th percentile) across never-tolled crossings. A real effect should sit clearly outside it after the dashed line.</p></div>
+  <div class="card"><h3 class="t">First-year change by crossing</h3><p class="sub">Jan 2025 to Jan 2026, against the never-tolled range</p><div style="height:10px"></div><div id="units"></div>
+    <p class="note">Outbound lanes show a similar dip to inbound, which a toll on entering the zone would not explain. So part of the dip is probably not the toll.</p></div>
+  <div class="card"><h3 class="t">Does it survive other ways of measuring?</h3><p class="sub">Both tunnels inbound, first year. Grey bar: never-tolled range in the same setup</p><div style="height:10px"></div><div id="robust"></div>
+    <details class="twin"><summary>Show data table</summary><div class="tw" id="robTable"></div></details></div>
+</div>
+
+<h2 class="sec" id="timing">2. Did drivers shift when they travel?</h2>
+<p class="sec-sub">The peak price applies 5:00 to 21:00 on weekdays. If drivers dodge it, entries should rise right after the price drops and fall right after it rises. Tuesday to Thursday average, 10-minute slots.</p>
+<div class="grid"><div class="card"><div class="head"><div><h3 class="t">Vehicles entering the zone through the day</h3><p class="sub">Entries per 10 minutes. Dashed lines are the price changes.</p></div><div class="seg" id="grpSeg" role="group" aria-label="Vehicle group"></div></div>
+  <div id="prof"></div><p class="note" id="profNote"></p>
+  <details class="twin"><summary>Show jump estimates for every group</summary><div class="tw" id="jumpTable"></div></details></div></div>
+
+<h2 class="sec" id="diversion">3. Did traffic move elsewhere?</h2>
+<p class="sec-sub">Some entries use roads that are not tolled, and nearby bridges could pick up diverted trips. These checks are descriptive, not causal.</p>
+<div class="grid two">
+  <div class="card"><h3 class="t">Vehicles per day charged at the zone border</h3><p class="sub">Monthly average of tolled entries</p><div style="height:8px"></div><div id="zone"></div></div>
+  <div class="card"><h3 class="t">Share of zone entries on untolled roads</h3><p class="sub">Excluded roadways such as parts of FDR Drive and West Side Highway</p><div style="height:8px"></div><div id="share"></div></div>
+  <div class="card span2"><h3 class="t">Do the two datasets agree?</h3><p class="sub">Zone file entries (tolled + untolled) at each tunnel divided by bridge-and-tunnel counts, by month. 1.00 means a perfect match.</p><div class="legend" id="lgRecon"></div><div id="recon"></div>
+    <p class="note">The datasets agree to within a few percent. One month at the Carey Tunnel is an outlier that I did not investigate.</p></div>
+</div>
+
+<h2 class="sec" id="limits">What this analysis cannot say</h2>
+<div class="card" style="margin-top:16px"><ul class="lim" style="margin-top:0">
+  <li><b>Only two crossings are treated.</b> They are the only bridge-and-tunnel counts that feed the zone, so results are noisy and cannot be read as a zone-wide effect.</li>
+  <li><b>The toll is partly dampened at the tunnels.</b> Some drivers get crossing credits there, so effects at these crossings are likely smaller than elsewhere.</li>
+  <li><b>No pre-period for the zone file.</b> It starts with the toll, so zone-wide totals can be compared only with outside baselines, not with a "before".</li>
+  <li><b>Donor crossings may have been affected too.</b> If never-tolled crossings absorbed some diverted traffic, the tunnel effect is understated.</li>
+  <li><b>The 05:00 price rise cannot be isolated.</b> Early-morning commuting and deliveries ramp up around then anyway.</li>
+  <li><b>Diversion checks are descriptive.</b> A small rise at a nearby bridge fits diversion but does not prove it.</li></ul></div>
+<footer><p>Method: gap estimator against a donor index with placebo tests in space and time; price-boundary jump estimate on a log scale with a fake-boundary benchmark. Code, tests and every number are in the repository.</p>
+<p>Data: MTA Bridges and Tunnels hourly crossings and MTA Congestion Relief Zone vehicle entries, both from New York State open data. Independent work; not affiliated with the MTA or any agency.</p></footer>
+</div>
+<div id="tip" role="status"></div>
+<script>
+const D=/*__DATA__*/null;
+const NS='http://www.w3.org/2000/svg', $=s=>document.querySelector(s), tip=$('#tip');
+const el=(n,a={},p)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const fp=(v,d=1)=>{if(v==null)return 'n/a';const r=Math.abs(v).toFixed(d);return (+r>0?(v>0?'+':'−'):'')+r+'%';};
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fd=s=>{const [y,m,d]=s.split('-');return MON[+m-1]+' '+(+d)+', '+y;};
+function showTip(h,x,y){tip.innerHTML=h;tip.style.display='block';const w=tip.offsetWidth,hh=tip.offsetHeight;tip.style.left=Math.max(8,Math.min(innerWidth-w-8,x+14))+'px';tip.style.top=Math.max(8,Math.min(innerHeight-hh-8,y+14))+'px';}
+const hideTip=()=>tip.style.display='none';
+const row=(k,v)=>`<div class="r"><span>${k}</span><b>${v}</b></div>`;
+function nice(min,max,n=5){const raw=(max-min)/n||1,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,s=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;const a=Math.floor(min/s)*s,b=Math.ceil(max/s)*s,t=[];for(let v=a;v<=b+s/2;v+=s)t.push(+v.toFixed(10));return {min:a,max:b,t};}
+function legend(host,items){host.innerHTML=items.map(i=>`<span><i class="${i.box?'box':''}" style="${i.box?'':'background:'+i.color}"></i>${i.name}</span>`).join('');}
+
+/* generic line chart. cfg: xs, series[{name,color,vals,w}], band{lo,hi}, xticks[{x,l}], yfmt, tip(i), vlines[{x,l}], aria, h, ymin, ymax */
+function lineChart(host,cfg){
+  host.innerHTML='';const W=Math.max(300,Math.round(host.clientWidth||720)),H=cfg.h||300,m={l:46,r:14,t:16,b:30};
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':cfg.aria,tabindex:0},host);
+  let lo=Infinity,hi=-Infinity;const all=[];cfg.series.forEach(s=>s.vals.forEach(v=>v!=null&&all.push(v)));if(cfg.band){cfg.band.lo.forEach(v=>v!=null&&all.push(v));cfg.band.hi.forEach(v=>v!=null&&all.push(v));}
+  lo=Math.min(...all);hi=Math.max(...all);if(cfg.ymin!=null)lo=Math.min(lo,cfg.ymin);if(cfg.ymax!=null)hi=Math.max(hi,cfg.ymax);
+  const ax=nice(lo,hi,4),x0=cfg.xs[0],x1=cfg.xs[cfg.xs.length-1];
+  const X=v=>m.l+(W-m.l-m.r)*(v-x0)/((x1-x0)||1),Y=v=>H-m.b-(H-m.t-m.b)*(v-ax.min)/((ax.max-ax.min)||1);
+  ax.t.forEach(t=>{el('line',{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),class:'gl'},svg);const tx=el('text',{x:m.l-8,y:Y(t)+4,class:'tk e'},svg);tx.textContent=cfg.yfmt(t);});
+  el('line',{x1:m.l,x2:W-m.r,y1:H-m.b,y2:H-m.b,class:'ax'},svg);
+  const maxT=Math.max(2,Math.floor((W-m.l-m.r)/62));let xt=cfg.xticks||[];if(xt.length>maxT){const k=Math.ceil(xt.length/maxT);xt=xt.filter((_,i)=>i%k===0);}xt.forEach(t=>{const tx=el('text',{x:X(t.x),y:H-m.b+18,class:'tk c'},svg);tx.textContent=t.l;});
+  if(cfg.band){let d='';const pts=cfg.xs.map((x,i)=>[x,cfg.band.hi[i],cfg.band.lo[i]]).filter(p=>p[1]!=null&&p[2]!=null);
+    pts.forEach((p,i)=>d+=(i?'L':'M')+X(p[0])+' '+Y(p[1]));pts.slice().reverse().forEach(p=>d+='L'+X(p[0])+' '+Y(p[2]));el('path',{d:d+'Z',style:'fill:var(--band)'},svg);}
+  if(ax.min<0&&ax.max>0)el('line',{x1:m.l,x2:W-m.r,y1:Y(0),y2:Y(0),class:'ax',style:'stroke:var(--ink-2)'},svg);
+  (cfg.vlines||[]).forEach(v=>{el('line',{x1:X(v.x),x2:X(v.x),y1:m.t,y2:H-m.b,class:'ref'},svg);if(v.l){const t=el('text',{x:X(v.x)+(v.dx||6),y:m.t+(v.dy||10),class:'lb b',style:v.anchor?'text-anchor:'+v.anchor:''},svg);t.textContent=v.l;}});
+  cfg.series.forEach(s=>{let d='',pen=false;s.vals.forEach((v,i)=>{if(v==null){pen=false;return;}d+=(pen?'L':'M')+X(cfg.xs[i]).toFixed(1)+' '+Y(v).toFixed(1);pen=true;});
+    el('path',{d,fill:'none',style:`stroke:${s.color};stroke-width:${s.w||2.4};stroke-linejoin:round;stroke-linecap:round`},svg);});
+  const cross=el('line',{y1:m.t,y2:H-m.b,class:'cross',style:'display:none'},svg),dots=cfg.series.map(s=>el('circle',{r:4.5,style:`fill:${s.color};stroke:var(--surface);stroke-width:2;display:none`},svg));
+  let cur=-1;
+  function show(i,cx,cy){cur=i;cross.setAttribute('x1',X(cfg.xs[i]));cross.setAttribute('x2',X(cfg.xs[i]));cross.style.display='';
+    dots.forEach((d,k)=>{const v=cfg.series[k].vals[i];if(v==null){d.style.display='none';return;}d.setAttribute('cx',X(cfg.xs[i]));d.setAttribute('cy',Y(v));d.style.display='';});showTip(cfg.tip(i),cx,cy);}
+  function hide(){cross.style.display='none';dots.forEach(d=>d.style.display='none');hideTip();cur=-1;}
+  const ov=el('rect',{x:m.l,y:m.t,width:W-m.l-m.r,height:H-m.t-m.b,fill:'transparent'},svg);
+  ov.addEventListener('pointermove',e=>{const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)*W/r.width;let b=0,bd=1e9;cfg.xs.forEach((x,i)=>{const dd=Math.abs(X(x)-px);if(dd<bd){bd=dd;b=i;}});show(b,e.clientX,e.clientY);});
+  ov.addEventListener('pointerleave',hide);
+  svg.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=Math.max(0,Math.min(cfg.xs.length-1,(cur<0?0:cur)+(e.key==='ArrowRight'?1:-1)));const r=svg.getBoundingClientRect();show(n,r.left+X(cfg.xs[n])*r.width/W,r.top+r.height/3);}if(e.key==='Escape')hide();});
+  svg.addEventListener('blur',hide);
+}
+/* bars */
+function barChart(host,cfg){host.innerHTML='';const W=Math.max(300,Math.round(host.clientWidth||720)),H=240,m={l:46,r:10,t:12,b:30};const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':cfg.aria},host);
+  const ax=nice(0,Math.max(...cfg.vals),4),n=cfg.vals.length,bw=(W-m.l-m.r)/n;const Y=v=>H-m.b-(H-m.t-m.b)*v/ax.max;
+  ax.t.forEach(t=>{el('line',{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),class:'gl'},svg);const tx=el('text',{x:m.l-8,y:Y(t)+4,class:'tk e'},svg);tx.textContent=cfg.yfmt(t);});
+  cfg.vals.forEach((v,i)=>{const x=m.l+i*bw+bw*.14;const r=el('rect',{x,y:Y(v),width:bw*.72,height:H-m.b-Y(v),rx:2,style:'fill:var(--s1)'},svg);
+    r.addEventListener('pointermove',e=>showTip(cfg.tip(i),e.clientX,e.clientY));r.addEventListener('pointerleave',hideTip);
+    if(i%Math.max(1,Math.ceil(n/Math.max(2,Math.floor((W-m.l-m.r)/62))))===0){const tx=el('text',{x:x+bw*.36,y:H-m.b+18,class:'tk c'},svg);tx.textContent=cfg.labels[i];}});
+  el('line',{x1:m.l,x2:W-m.r,y1:H-m.b,y2:H-m.b,class:'ax'},svg);}
+/* dot rows */
+function dotRows(host,rows,o){const rng=nice(o.min,o.max,o.nt||(host.clientWidth<460?2:5)),pc=v=>100*(v-rng.min)/(rng.max-rng.min);let h='<div class="rows">';
+  rows.forEach(r=>{h+=`<div class="row" title="${(r.title||'').replace(/"/g,'&quot;')}"><div class="l">${r.label}</div><div class="tr">`+(r.lo!=null?`<div class="bd" style="left:${pc(r.lo)}%;width:${pc(r.hi)-pc(r.lo)}%"></div>`:'')+`<div class="z" style="left:${pc(0)}%"></div><div class="dt" style="left:${pc(r.v)}%;background:${r.color||'var(--s1)'}"></div></div><div class="v">${fp(r.v)}</div></div>`;});
+  h+='</div><div class="axisrow"><div></div><div class="ticks">'+rng.t.map(t=>`<span style="left:${pc(t)}%">${t}%</span>`).join('')+'</div><div></div></div>';host.innerHTML=h;}
+function table(host,cols,rows){host.innerHTML='<table><thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>`<td>${c}</td>`).join('')+'</tr>').join('')+'</tbody></table>';}
+
+/* findings */
+$('#findings').innerHTML=['q1','q2','q3'].map((k,i)=>{const f=D.F[k];return `<article class="card find"><div class="q">Question ${i+1}</div><div class="n">${f.n}</div><h3>${f.h}</h3><p>${f.t}</p><div class="a">${f.a}</div></article>`;}).join('');
+
+/* event study */
+function drawEvent(){const ev=D.event;const xs=ev.map((_,i)=>i);const tk=[];let last='';ev.forEach((e,i)=>{const [y,m]=e.d.split('-');if([1,4,7,10].includes(+m)&&(y+m)!==last){last=y+m;tk.push({x:i,l:MON[+m-1]+' '+String(y).slice(2)});}});
+  const si=ev.findIndex(e=>e.d>=D.start);
+  legend($('#lgEvent'),[{name:'Both tunnels, inbound',color:'var(--s1)'},{name:'Never-tolled crossings (10th–90th percentile)',box:true}]);
+  lineChart($('#event'),{xs,series:[{name:'Tunnels',color:'var(--s1)',vals:ev.map(e=>e.t),w:2.6}],band:{lo:ev.map(e=>e.lo),hi:ev.map(e=>e.hi)},xticks:tk.filter((_,i)=>i%2===0),yfmt:v=>fp(v,0),
+    vlines:[{x:si,l:'Toll starts Jan 5, 2025',dx:6,dy:12}],ymax:2,aria:'Line chart of weekly traffic at the two tunnels relative to expected, before and after the toll began, against a grey band for never-tolled crossings.',
+    tip:i=>`<div class="t">Week of ${fd(ev[i].d)}</div>`+row('Tunnels',fp(ev[i].t))+(ev[i].lo!=null?row('Never-tolled range',fp(ev[i].lo)+' to '+fp(ev[i].hi)):'')});}
+
+/* units */
+function drawUnits(){const col=n=>n.includes('Bridge')?'var(--s2)':n.includes('combined')?'var(--s1)':n.includes('out of')?'var(--gray)':'var(--s1)';
+  const order=['Both tunnels into Manhattan (combined)','Queens-Midtown Tunnel (into Manhattan)','Hugh L. Carey Tunnel (into Manhattan)','Queens-Midtown Tunnel (out of Manhattan)','Hugh L. Carey Tunnel (out of Manhattan)','Henry Hudson Bridge (into Manhattan)','RFK Bridge from Bronx (into Manhattan/Queens)'];
+  const U=order.map(n=>D.units.find(u=>u.name===n)).filter(Boolean);const all=U.map(u=>u.v).concat([D.placebo.min,D.placebo.max]);
+  dotRows($('#units'),U.map(u=>({label:u.name.replace(' (into Manhattan)',' in').replace(' (out of Manhattan)',' out').replace(' (combined)','').replace('Both tunnels into Manhattan','Both tunnels in').replace(' (into Manhattan/Queens)',' in'),v:u.v,lo:D.placebo.min,hi:D.placebo.max,color:col(u.name),title:u.name})),{min:Math.min(...all)-1,max:Math.max(...all)+1});}
+
+/* robustness */
+function drawRobust(){const R=D.robust;const all=R.flatMap(r=>[r.v,r.lo,r.hi]);
+  dotRows($('#robust'),R.map(r=>({label:r.spec.replace('Tue-Thu clean, without donor ','Tue–Thu, no ').replace('Tue-Thu, holiday periods removed','Tue–Thu, holidays out').replace('Tue-Thu clean, baseline from Jul 2022','Tue–Thu, baseline Jul 2022').replace('Main: all weeks, 2023-24 baseline','Main (all weeks)').replace(' Bridge',''),v:r.v,lo:r.lo,hi:r.hi,title:r.spec+': placebo range '+fp(r.lo)+' to '+fp(r.hi)+', p='+r.p})),{min:Math.min(...all)-1,max:Math.max(...all)+1});
+  table($('#robTable'),['Setup','Tunnels, first year','All weeks since','Never-tolled range','p-value'],R.map(r=>[r.spec,fp(r.v,2),fp(r.post,2),fp(r.lo)+' to '+fp(r.hi),r.p.toFixed(2)]));}
+
+/* timing */
+let tcur=null;
+function drawTiming(){const G=D.groups;if(tcur===null){tcur=G.indexOf('Cars, pickups, vans');if(tcur<0)tcur=0;}const seg=$('#grpSeg');
+  function draw(){seg.innerHTML='';G.forEach((g,i)=>{const b=document.createElement('button');b.type='button';b.textContent=g;b.setAttribute('aria-pressed',i===tcur);b.onclick=()=>{tcur=i;draw();};seg.appendChild(b);});
+    const g=G[tcur],y=D.profile[g],xs=y.map((_,i)=>i/6),J=D.jumps.filter(j=>j.g===g);
+    const vl=J.map(j=>{const [h,mi]=j.b.split(':').map(Number);return {x:h+mi/60,l:j.b+' '+fp(j.j,0),dx:j.b==='21:00'?-6:6,anchor:j.b==='21:00'?'end':'start',dy:14};});
+    lineChart($('#prof'),{xs,series:[{name:g,color:'var(--s1)',vals:y,w:2.6}],xticks:[0,3,6,9,12,15,18,21,24].filter(h=>h<24).map(h=>({x:h,l:h+':00'})),yfmt:v=>v.toLocaleString(),vlines:vl,ymin:0,h:300,
+      aria:'Line chart of average vehicles entering the zone per 10 minutes through the day for '+g+', with the two price changes marked.',tip:i=>{const h=Math.floor(i/6),mi=(i%6)*10;return `<div class="t">${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}</div>`+row('Entries / 10 min',y[i].toLocaleString());}});
+    const c=J.find(j=>j.b==='21:00'),a=J.find(j=>j.b==='05:00');
+    const verdict=j=>!j?'':(j.same&&j.clears?`<span class="ok">stable</span> (${fp(j.rmin,0)} to ${fp(j.rmax,0)} across settings)`:`<span class="warn">not stable</span> (${fp(j.rmin,0)} to ${fp(j.rmax,0)} across settings)`);
+    $('#profNote').innerHTML=`<b>21:00, price drops:</b> entries jump ${fp(c&&c.j,0)} — ${verdict(c)}. <b>05:00, price rises:</b> ${fp(a&&a.j,0)} — ${verdict(a)}.`;}
+  draw();
+  table($('#jumpTable'),['Group','Boundary','Price change','Jump','90% range','Settings range','Beats fake boundaries'],D.jumps.map(j=>[j.g,j.b,j.ch,fp(j.j,1),fp(j.lo,0)+' to '+fp(j.hi,0),fp(j.rmin,0)+' to '+fp(j.rmax,0),j.clears?'<span class="ok">yes</span>':'<span class="warn">no</span>']));}
+
+/* zone */
+function drawZone(){const Z=D.zone;const lab=Z.map(z=>{const [y,m]=z.m.split('-');return MON[+m-1]+' '+String(y).slice(2);});
+  barChart($('#zone'),{vals:Z.map(z=>z.per_day),labels:lab,yfmt:v=>(v/1000)+'k',aria:'Bar chart of average tolled vehicles per day by month.',tip:i=>`<div class="t">${lab[i]}</div>`+row('Tolled per day',Z[i].per_day.toLocaleString())+row('Days',Z[i].days)});
+  const xs=Z.map((_,i)=>i);lineChart($('#share'),{xs,series:[{name:'Share',color:'var(--s2)',vals:Z.map(z=>z.share)}],xticks:xs.filter(i=>i%3===0).map(i=>({x:i,l:lab[i]})),yfmt:v=>v+'%',ymin:0,h:240,aria:'Line chart of the share of zone entries on untolled roads by month.',tip:i=>`<div class="t">${lab[i]}</div>`+row('On untolled roads',Z[i].share.toFixed(1)+'%')});
+  const T=[...new Set(D.recon.map(r=>r.t))],M=[...new Set(D.recon.map(r=>r.m))].sort(),cols=['var(--s1)','var(--s2)'];
+  legend($('#lgRecon'),T.map((t,i)=>({name:t,color:cols[i]})));
+  const ml=M.map(m=>{const [y,mm]=m.split('-');return MON[+mm-1]+' '+String(y).slice(2);});
+  lineChart($('#recon'),{xs:M.map((_,i)=>i),series:T.map((t,i)=>({name:t,color:cols[i],vals:M.map(m=>{const r=D.recon.find(x=>x.t===t&&x.m===m);return r?r.ratio:null;})})),xticks:M.map((_,i)=>i).filter(i=>i%3===0).map(i=>({x:i,l:ml[i]})),yfmt:v=>v.toFixed(2),ymin:.95,ymax:1.08,h:240,
+    vlines:[],aria:'Line chart of the ratio of zone-file entries to bridge-and-tunnel counts at each tunnel by month.',tip:i=>`<div class="t">${ml[i]}</div>`+T.map(t=>{const r=D.recon.find(x=>x.t===t&&x.m===M[i]);return row(t,r?r.ratio.toFixed(3):'n/a');}).join('')});}
+
+function render(){drawEvent();drawUnits();drawRobust();drawTiming();drawZone();}
+render();let lw=innerWidth,rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(innerWidth!==lw){lw=innerWidth;render();}},150);});
+
+/* theme */
+(function(){const b=$('#theme'),r=document.documentElement;const set=t=>{r.setAttribute('data-theme',t);b.textContent=t==='dark'?'Light':'Dark';};
+  set(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');b.onclick=()=>set(r.getAttribute('data-theme')==='dark'?'light':'dark');})();
+</script>
+</body>
+</html>

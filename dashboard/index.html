@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Did congestion pricing really cut traffic? | NYC data analysis</title>
+<meta name="description" content="Independent analysis of NYC congestion pricing using public bridge-and-tunnel and zone-entry data.">
+<style>
+  :root { color-scheme: light;
+    --page:#f6f5f2; --surface:#fff; --surface-2:#f0efeb; --ink-1:#0b0b0b; --ink-2:#52514e; --muted:#6b6a65; --grid:#e1e0d9; --axis:#c3c2b7;
+    --border:rgba(11,11,11,.10); --hover:rgba(11,11,11,.06); --focus:#2a78d6; --accent:#2a78d6;
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --gray:#898781; --band:rgba(137,135,129,.22); }
+  :root[data-theme="dark"] { color-scheme: dark;
+    --page:#0f0f10; --surface:#1b1b1d; --surface-2:#242427; --ink-1:#f5f5f3; --ink-2:#c9c8c2; --muted:#8e8d86; --grid:#2e2e31; --axis:#3d3d41;
+    --border:rgba(255,255,255,.10); --hover:rgba(255,255,255,.08); --focus:#7db3f0; --accent:#3987e5;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --gray:#8e8d86; --band:rgba(142,141,134,.28); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--ink-1); font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  h1,h2,h3,p { margin:0; }
+  a { color:var(--focus); }
+  button { font:inherit; color:inherit; }
+  :focus-visible { outline:2px solid var(--focus); outline-offset:2px; border-radius:4px; }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 16px 56px; }
+  .bar { position:sticky; top:0; z-index:5; background:var(--page); border-bottom:1px solid var(--border); }
+  .bar .in { max-width:1120px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .bar b { font-size:.9375rem; }
+  .bar nav { display:flex; gap:4px; overflow-x:auto; }
+  .bar nav a { color:var(--ink-2); text-decoration:none; font-size:.875rem; padding:8px 10px; border-radius:6px; white-space:nowrap; }
+  .bar nav a:hover { background:var(--hover); color:var(--ink-1); }
+  .theme { min-height:36px; padding:0 14px; border:1px solid var(--border); background:var(--surface); border-radius:8px; cursor:pointer; }
+  .theme:hover { background:var(--hover); }
+  @media (pointer:coarse) { .theme, .bar nav a { min-height:44px; } }
+  header.hero { padding:40px 0 8px; }
+  .eyebrow { color:var(--accent); font-weight:700; font-size:.8125rem; letter-spacing:.08em; text-transform:uppercase; }
+  header.hero h1 { font-size:clamp(1.75rem,4.5vw,2.75rem); line-height:1.1; letter-spacing:-.02em; margin-top:8px; max-width:20ch; }
+  header.hero .lede { color:var(--ink-2); margin-top:12px; max-width:68ch; font-size:1.0625rem; }
+  .notice { margin-top:16px; padding:10px 14px; border:1px solid var(--border); background:var(--surface); border-radius:8px; color:var(--ink-2); font-size:.875rem; }
+  .cards3 { margin-top:24px; display:grid; gap:16px; grid-template-columns:minmax(0,1fr); }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; min-width:0; }
+  .find .q { color:var(--ink-2); font-size:.8125rem; font-weight:600; }
+  .find .n { font-size:2.5rem; line-height:1.1; font-weight:750; letter-spacing:-.02em; margin-top:4px; }
+  .find h3 { font-size:.9375rem; margin-top:6px; }
+  .find p { color:var(--ink-2); font-size:.875rem; margin-top:6px; }
+  .find .a { margin-top:10px; font-size:.875rem; border-top:1px solid var(--grid); padding-top:10px; }
+  h2.sec { margin-top:40px; font-size:1.25rem; scroll-margin-top:64px; }
+  .sec-sub { color:var(--ink-2); font-size:.9375rem; margin-top:4px; max-width:70ch; }
+  .grid { margin-top:16px; display:grid; gap:16px; grid-template-columns:minmax(0,1fr); }
+  @media (min-width:820px) { .cards3 { grid-template-columns:repeat(3,minmax(0,1fr)); } .grid.two { grid-template-columns:repeat(2,minmax(0,1fr)); } .span2 { grid-column:1/-1; } }
+  .card h3.t { font-size:1rem; line-height:1.3; }
+  .card .sub { color:var(--ink-2); font-size:.875rem; margin-top:2px; }
+  .card .note { color:var(--ink-2); font-size:.8125rem; margin-top:10px; }
+  .head { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start; margin-bottom:10px; }
+  .seg { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; flex-wrap:wrap; }
+  .seg button { min-height:32px; padding:0 12px; border:0; background:transparent; cursor:pointer; font-size:.8125rem; color:var(--ink-2); }
+  .seg button+button { border-left:1px solid var(--border); }
+  .seg button[aria-pressed="true"] { background:var(--hover); color:var(--ink-1); font-weight:650; }
+  @media (pointer:coarse) { .seg button { min-height:44px; } }
+  svg { display:block; width:100%; height:auto; overflow:visible; }
+  svg text { font-family:inherit; }
+  .gl { stroke:var(--grid); stroke-width:1; } .ax { stroke:var(--axis); stroke-width:1; }
+  .tk { fill:var(--ink-2); font-size:12px; } .tk.c { text-anchor:middle; } .tk.e { text-anchor:end; }
+  .lb { fill:var(--ink-1); font-size:12px; } .lb.b { font-weight:650; paint-order:stroke; stroke:var(--surface); stroke-width:4px; stroke-linejoin:round; }
+  .ref { stroke:var(--ink-2); stroke-width:1; stroke-dasharray:4 3; } .cross { stroke:var(--ink-2); stroke-width:1; }
+  .legend { display:flex; flex-wrap:wrap; gap:6px 16px; font-size:.8125rem; color:var(--ink-2); margin-bottom:8px; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; } .legend i { width:14px; height:4px; border-radius:2px; display:inline-block; }
+  .legend i.box { height:10px; background:var(--band); border-radius:2px; }
+  #tip { position:fixed; z-index:20; pointer-events:none; display:none; min-width:150px; max-width:280px; padding:8px 10px; background:var(--surface); border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,.14); font-size:.8125rem; }
+  #tip .t { font-weight:650; margin-bottom:4px; } #tip .r { display:flex; justify-content:space-between; gap:12px; } #tip .r span { color:var(--ink-2); }
+  /* dot rows */
+  .rows { display:grid; gap:2px; }
+  .row { display:grid; grid-template-columns:minmax(120px,1.2fr) minmax(0,2fr) 64px; gap:10px; align-items:center; min-height:34px; }
+  .row .l { font-size:.8125rem; color:var(--ink-2); line-height:1.25; }
+  .row .tr { position:relative; height:26px; }
+  .row .tr::before { content:""; position:absolute; left:0; right:0; top:50%; height:1px; background:var(--grid); }
+  .row .bd { position:absolute; top:4px; bottom:4px; background:var(--band); border-radius:3px; }
+  .row .z { position:absolute; top:0; bottom:0; width:1px; background:var(--ink-2); }
+  .row .dt { position:absolute; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; border:2px solid var(--surface); }
+  .row .v { text-align:right; font-weight:650; font-size:.875rem; font-variant-numeric:tabular-nums; }
+  .axisrow { display:grid; grid-template-columns:minmax(120px,1.2fr) minmax(0,2fr) 64px; gap:10px; }
+  .axisrow .ticks { position:relative; height:18px; } .axisrow .ticks span { position:absolute; transform:translateX(-50%); font-size:.75rem; color:var(--ink-2); }
+  details.twin { margin-top:12px; } details.twin summary { cursor:pointer; color:var(--ink-2); font-size:.8125rem; min-height:32px; display:flex; align-items:center; }
+  .tw { overflow-x:auto; } table { border-collapse:collapse; width:100%; font-size:.8125rem; font-variant-numeric:tabular-nums; }
+  th,td { text-align:right; padding:6px 10px; border-bottom:1px solid var(--grid); white-space:nowrap; } th:first-child,td:first-child { text-align:left; } th { color:var(--ink-2); font-weight:600; }
+  .ok { color:var(--s3); font-weight:650; } .warn { color:var(--s2); font-weight:650; }
+  ul.lim { margin:10px 0 0; padding-left:20px; color:var(--ink-2); font-size:.9375rem; } ul.lim li { margin-top:6px; } ul.lim b { color:var(--ink-1); }
+  footer { margin-top:36px; color:var(--ink-2); font-size:.8125rem; } footer p+p { margin-top:8px; }
+  .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+<div class="bar"><div class="in"><b>NYC congestion pricing</b>
+  <nav aria-label="Sections"><a href="#volume">1 Traffic</a><a href="#timing">2 Timing</a><a href="#diversion">3 Diversion</a><a href="#limits">Limits</a></nav>
+  <button class="theme" id="theme" type="button" aria-label="Switch between light and dark theme">Dark</button></div></div>
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">Independent analysis · public data</div>
+  <h1>Did congestion pricing really cut traffic?</h1>
+  <p class="lede">New York began charging most vehicles to enter Manhattan below 60th Street on January 5, 2025. Using only public bridge-and-tunnel counts and the zone's own entry data, I asked three questions: how much traffic left, did drivers change when they travel, and did traffic move to other roads.</p>
+  <p class="notice">Independent portfolio project. Data are public (MTA open data on data.ny.gov). The MTA is mentioned for context only and is not affiliated with this work.</p>
+</header>
+<section class="cards3" id="findings" aria-label="Key findings"></section>
+
+<h2 class="sec" id="volume">1. How much traffic left?</h2>
+<p class="sec-sub">Each week at the two tunnels that feed the zone is compared with the same week of the year in 2023–24, relative to far-away crossings that were never tolled. Those crossings show how much a week can drift by chance.</p>
+<div class="grid two">
+  <div class="card span2"><div class="head"><div><h3 class="t">Inbound traffic at the Queens-Midtown and Carey tunnels vs expected</h3><p class="sub">4-week average, percent difference from what the baseline implies</p></div></div>
+    <div class="legend" id="lgEvent"></div><div id="event"></div>
+    <p class="note">The grey band is the range (10th to 90th percentile) across never-tolled crossings. A real effect should sit clearly outside it after the dashed line.</p></div>
+  <div class="card"><h3 class="t">First-year change by crossing</h3><p class="sub">Jan 2025 to Jan 2026, against the never-tolled range</p><div style="height:10px"></div><div id="units"></div>
+    <p class="note">Outbound lanes show a similar dip to inbound, which a toll on entering the zone would not explain. So part of the dip is probably not the toll.</p></div>
+  <div class="card"><h3 class="t">Does it survive other ways of measuring?</h3><p class="sub">Both tunnels inbound, first year. Grey bar: never-tolled range in the same setup</p><div style="height:10px"></div><div id="robust"></div>
+    <details class="twin"><summary>Show data table</summary><div class="tw" id="robTable"></div></details></div>
+</div>
+
+<h2 class="sec" id="timing">2. Did drivers shift when they travel?</h2>
+<p class="sec-sub">The peak price applies 5:00 to 21:00 on weekdays. If drivers dodge it, entries should rise right after the price drops and fall right after it rises. Tuesday to Thursday average, 10-minute slots.</p>
+<div class="grid"><div class="card"><div class="head"><div><h3 class="t">Vehicles entering the zone through the day</h3><p class="sub">Entries per 10 minutes. Dashed lines are the price changes.</p></div><div class="seg" id="grpSeg" role="group" aria-label="Vehicle group"></div></div>
+  <div id="prof"></div><p class="note" id="profNote"></p>
+  <details class="twin"><summary>Show jump estimates for every group</summary><div class="tw" id="jumpTable"></div></details></div></div>
+
+<h2 class="sec" id="diversion">3. Did traffic move elsewhere?</h2>
+<p class="sec-sub">Some entries use roads that are not tolled, and nearby bridges could pick up diverted trips. These checks are descriptive, not causal.</p>
+<div class="grid two">
+  <div class="card"><h3 class="t">Vehicles per day charged at the zone border</h3><p class="sub">Monthly average of tolled entries</p><div style="height:8px"></div><div id="zone"></div></div>
+  <div class="card"><h3 class="t">Share of zone entries on untolled roads</h3><p class="sub">Excluded roadways such as parts of FDR Drive and West Side Highway</p><div style="height:8px"></div><div id="share"></div></div>
+  <div class="card span2"><h3 class="t">Do the two datasets agree?</h3><p class="sub">Zone file entries (tolled + untolled) at each tunnel divided by bridge-and-tunnel counts, by month. 1.00 means a perfect match.</p><div class="legend" id="lgRecon"></div><div id="recon"></div>
+    <p class="note">The datasets agree to within a few percent. One month at the Carey Tunnel is an outlier that I did not investigate.</p></div>
+</div>
+
+<h2 class="sec" id="limits">What this analysis cannot say</h2>
+<div class="card" style="margin-top:16px"><ul class="lim" style="margin-top:0">
+  <li><b>Only two crossings are treated.</b> They are the only bridge-and-tunnel counts that feed the zone, so results are noisy and cannot be read as a zone-wide effect.</li>
+  <li><b>The toll is partly dampened at the tunnels.</b> Some drivers get crossing credits there, so effects at these crossings are likely smaller than elsewhere.</li>
+  <li><b>No pre-period for the zone file.</b> It starts with the toll, so zone-wide totals can be compared only with outside baselines, not with a "before".</li>
+  <li><b>Donor crossings may have been affected too.</b> If never-tolled crossings absorbed some diverted traffic, the tunnel effect is understated.</li>
+  <li><b>The 05:00 price rise cannot be isolated.</b> Early-morning commuting and deliveries ramp up around then anyway.</li>
+  <li><b>Diversion checks are descriptive.</b> A small rise at a nearby bridge fits diversion but does not prove it.</li></ul></div>
+<footer><p>Method: gap estimator against a donor index with placebo tests in space and time; price-boundary jump estimate on a log scale with a fake-boundary benchmark. Code, tests and every number are in the repository.</p>
+<p>Data: MTA Bridges and Tunnels hourly crossings and MTA Congestion Relief Zone vehicle entries, both from New York State open data. Independent work; not affiliated with the MTA or any agency.</p></footer>
+</div>
+<div id="tip" role="status"></div>
+<script>
+const D={"F":{"q1":{"n":"-4.0%","h":"Traffic at the two tunnels feeding the zone","t":"Median first-year change across 9 ways of measuring it. Consistent across every check and borderline against chance.","a":"Report it as a small, consistent decline, not a precise number. Two crossings is a thin base."},"q2":{"n":"+28%","h":"Cars shift their arrival to just after the price drops","t":"Cars entering just after 21:00, when the toll drops, are +28% vs just before (stays between +28% and +35% under every setting). At 05:00, when the toll rises, no group gives a stable answer, so the data cannot identify a response there.","a":"Cheaper hours pull some trips later, which is what a time-of-day price should do."},"q3":{"n":"12%","h":"Zone entries that use untolled roads","t":"Stable month to month. Bridges that approach the zone: RFK from the Bronx +3.1%, Henry Hudson +0.7% in the first year. Small and descriptive, inside the noise.","a":"The zone file and tunnel counts agree to within 6% in every month shown."}},"event":[{"d":"2023-11-12","t":2.22,"lo":-2.26,"hi":2.02},{"d":"2023-11-19","t":1.44,"lo":-2.71,"hi":3.68},{"d":"2023-11-26","t":0.48,"lo":-4.01,"hi":2.85},{"d":"2023-12-03","t":0.99,"lo":-4.11,"hi":3.59},{"d":"2023-12-10","t":3.13,"lo":-7.62,"hi":4.68},{"d":"2023-12-17","t":3.1,"lo":-3.81,"hi":2.55},{"d":"2023-12-24","t":3.17,"lo":-2.7,"hi":2.94},{"d":"2023-12-31","t":2.34,"lo":-2.41,"hi":3.32},{"d":"2024-01-07","t":1.03,"lo":-2.12,"hi":3.53},{"d":"2024-01-14","t":0.71,"lo":-2.34,"hi":2.56},{"d":"2024-01-21","t":-0.33,"lo":-3.55,"hi":4.35},{"d":"2024-01-28","t":-1.09,"lo":-3.08,"hi":4.7},{"d":"2024-02-04","t":-1.27,"lo":-2.92,"hi":3.35},{"d":"2024-02-11","t":-0.95,"lo":-5.42,"hi":5.81},{"d":"2024-02-18","t":-0.73,"lo":-2.26,"hi":3.29},{"d":"2024-02-25","t":-1.25,"lo":-2.74,"hi":4.15},{"d":"2024-03-03","t":-1.05,"lo":-2.27,"hi":4.26},{"d":"2024-03-10","t":-1.4,"lo":-3.77,"hi":5.23},{"d":"2024-03-17","t":-0.81,"lo":-2.71,"hi":4.2},{"d":"2024-03-24","t":0.23,"lo":-3.41,"hi":4.43},{"d":"2024-03-31","t":1.1,"lo":-3.23,"hi":4.4},{"d":"2024-04-07","t":1.34,"lo":-2.83,"hi":2.92},{"d":"2024-04-14","t":1.07,"lo":-2.28,"hi":3.53},{"d":"2024-04-21","t":0.03,"lo":-2.57,"hi":2.76},{"d":"2024-04-28","t":-0.99,"lo":-2.71,"hi":3.74},{"d":"2024-05-05","t":0.07,"lo":-3.46,"hi":4.96},{"d":"2024-05-12","t":0.16,"lo":-2.64,"hi":2.74},{"d":"2024-05-19","t":0.62,"lo":-2.6,"hi":2.82},{"d":"2024-05-26","t":1.75,"lo":-2.04,"hi":1.93},{"d":"2024-06-02","t":-1.62,"lo":-2.96,"hi":3.86},{"d":"2024-06-09","t":-3.04,"lo":-4.17,"hi":5.91},{"d":"2024-06-16","t":-3.34,"lo":-4.84,"hi":6.07},{"d":"2024-06-23","t":-7.14,"lo":-5.79,"hi":7.19},{"d":"2024-06-30","t":-2.04,"lo":-3.58,"hi":3.58},{"d":"2024-07-07","t":-0.16,"lo":-1.99,"hi":1.86},{"d":"2024-07-14","t":-0.41,"lo":-1.95,"hi":2.51},{"d":"2024-07-21","t":2.43,"lo":-2.94,"hi":4.18},{"d":"2024-07-28","t":-0.15,"lo":-3.59,"hi":3.72},{"d":"2024-08-04","t":-0.89,"lo":-3.45,"hi":4.58},{"d":"2024-08-11","t":0.3,"lo":-4.7,"hi":5.23},{"d":"2024-08-18","t":-0.21,"lo":-3.01,"hi":3.55},{"d":"2024-08-25","t":-1.32,"lo":-1.79,"hi":2.16},{"d":"2024-09-01","t":0.75,"lo":-3.79,"hi":3.89},{"d":"2024-09-08","t":0.09,"lo":-3.66,"hi":2.54},{"d":"2024-09-15","t":-1.36,"lo":-3.06,"hi":3.76},{"d":"2024-09-22","t":-2.4,"lo":-3.21,"hi":4.49},{"d":"2024-09-29","t":-4.93,"lo":-2.86,"hi":3.71},{"d":"2024-10-06","t":-4.03,"lo":-2.68,"hi":5.66},{"d":"2024-10-13","t":-2.47,"lo":-2.61,"hi":4.62},{"d":"2024-10-20","t":-0.45,"lo":-2.68,"hi":3.84},{"d":"2024-10-27","t":-0.38,"lo":-2.25,"hi":3.44},{"d":"2024-11-03","t":-1.74,"lo":-1.51,"hi":2.68},{"d":"2024-11-10","t":-2.47,"lo":-2.02,"hi":3.01},{"d":"2024-11-17","t":-2.13,"lo":-1.89,"hi":2.36},{"d":"2024-11-24","t":-1.37,"lo":-3.51,"hi":2.86},{"d":"2024-12-01","t":-0.47,"lo":-2.75,"hi":4.3},{"d":"2024-12-08","t":-0.95,"lo":-3.45,"hi":4.41},{"d":"2024-12-15","t":-2.95,"lo":-4.0,"hi":8.44},{"d":"2024-12-22","t":-3.18,"lo":-3.36,"hi":6.04},{"d":"2024-12-29","t":-4.07,"lo":-2.87,"hi":5.51},{"d":"2025-01-05","t":-5.71,"lo":-3.12,"hi":5.79},{"d":"2025-01-12","t":-5.2,"lo":-2.53,"hi":2.54},{"d":"2025-01-19","t":-6.43,"lo":-3.18,"hi":3.83},{"d":"2025-01-26","t":-6.15,"lo":-2.73,"hi":2.9},{"d":"2025-02-02","t":-4.89,"lo":-3.03,"hi":4.11},{"d":"2025-02-09","t":-4.0,"lo":-2.7,"hi":2.86},{"d":"2025-02-16","t":-4.93,"lo":-3.72,"hi":4.05},{"d":"2025-02-23","t":-5.16,"lo":-3.57,"hi":3.62},{"d":"2025-03-02","t":-5.72,"lo":-3.31,"hi":3.19},{"d":"2025-03-09","t":-6.88,"lo":-3.92,"hi":4.3},{"d":"2025-03-16","t":-6.64,"lo":-3.15,"hi":3.85},{"d":"2025-03-23","t":-6.38,"lo":-2.94,"hi":4.0},{"d":"2025-03-30","t":-5.61,"lo":-2.48,"hi":4.04},{"d":"2025-04-06","t":-5.13,"lo":-1.23,"hi":3.09},{"d":"2025-04-13","t":-3.35,"lo":-1.66,"hi":2.58},{"d":"2025-04-20","t":-1.91,"lo":-2.58,"hi":3.26},{"d":"2025-04-27","t":-1.12,"lo":-2.87,"hi":3.83},{"d":"2025-05-04","t":-0.89,"lo":-3.72,"hi":3.58},{"d":"2025-05-11","t":-1.55,"lo":-2.02,"hi":3.66},{"d":"2025-05-18","t":-2.19,"lo":-3.27,"hi":4.53},{"d":"2025-05-25","t":-2.73,"lo":-3.65,"hi":4.78},{"d":"2025-06-01","t":-2.12,"lo":-3.31,"hi":4.81},{"d":"2025-06-08","t":-1.57,"lo":-3.42,"hi":5.22},{"d":"2025-06-15","t":-2.09,"lo":-2.48,"hi":4.26},{"d":"2025-06-22","t":-4.08,"lo":-4.22,"hi":5.65},{"d":"2025-06-29","t":-3.9,"lo":-4.01,"hi":5.93},{"d":"2025-07-06","t":-4.53,"lo":-3.69,"hi":4.84},{"d":"2025-07-13","t":-5.44,"lo":-3.56,"hi":3.92},{"d":"2025-07-20","t":-2.42,"lo":-3.58,"hi":4.74},{"d":"2025-07-27","t":-3.55,"lo":-2.97,"hi":5.01},{"d":"2025-08-03","t":-3.73,"lo":-3.29,"hi":4.85},{"d":"2025-08-10","t":-2.09,"lo":-2.62,"hi":4.17},{"d":"2025-08-17","t":-2.67,"lo":-2.58,"hi":3.19},{"d":"2025-08-24","t":-0.59,"lo":-1.66,"hi":2.23},{"d":"2025-08-31","t":1.38,"lo":-2.71,"hi":2.97},{"d":"2025-09-07","t":0.43,"lo":-3.32,"hi":3.03},{"d":"2025-09-14","t":0.8,"lo":-3.57,"hi":4.1},{"d":"2025-09-21","t":-1.82,"lo":-3.31,"hi":3.81},{"d":"2025-09-28","t":-3.19,"lo":-2.72,"hi":2.52},{"d":"2025-10-05","t":-3.45,"lo":-2.61,"hi":2.88},{"d":"2025-10-12","t":-4.15,"lo":-2.96,"hi":2.69},{"d":"2025-10-19","t":-2.69,"lo":-3.32,"hi":2.27},{"d":"2025-10-26","t":-1.97,"lo":-3.5,"hi":3.35},{"d":"2025-11-02","t":-1.46,"lo":-3.22,"hi":1.9},{"d":"2025-11-09","t":-1.29,"lo":-2.71,"hi":1.87},{"d":"2025-11-16","t":-1.3,"lo":-2.76,"hi":1.96},{"d":"2025-11-23","t":-1.8,"lo":-3.07,"hi":2.03},{"d":"2025-11-30","t":-2.65,"lo":-3.24,"hi":2.11},{"d":"2025-12-07","t":-2.48,"lo":-2.59,"hi":2.3},{"d":"2025-12-14","t":-3.84,"lo":-2.77,"hi":2.44},{"d":"2025-12-21","t":-3.44,"lo":-3.7,"hi":2.61},{"d":"2025-12-28","t":-1.91,"lo":-3.96,"hi":2.59},{"d":"2026-01-04","t":-2.4,"lo":-4.58,"hi":2.02},{"d":"2026-01-11","t":-0.74,"lo":-4.55,"hi":2.22},{"d":"2026-01-18","t":-1.62,"lo":-3.26,"hi":2.49},{"d":"2026-01-25","t":-2.89,"lo":-3.09,"hi":2.42},{"d":"2026-02-01","t":-3.02,"lo":-2.4,"hi":1.94},{"d":"2026-02-08","t":-2.91,"lo":-4.89,"hi":2.76},{"d":"2026-02-15","t":-4.04,"lo":-3.5,"hi":3.45},{"d":"2026-02-22","t":-3.6,"lo":-4.11,"hi":3.05},{"d":"2026-03-01","t":-4.59,"lo":-4.32,"hi":3.64},{"d":"2026-03-08","t":-5.82,"lo":-3.09,"hi":2.84},{"d":"2026-03-15","t":-5.46,"lo":-4.32,"hi":2.69},{"d":"2026-03-22","t":-6.83,"lo":-3.8,"hi":3.03},{"d":"2026-03-29","t":-5.59,"lo":-5.04,"hi":4.61},{"d":"2026-04-05","t":-5.86,"lo":-3.16,"hi":3.41},{"d":"2026-04-12","t":-5.94,"lo":-3.09,"hi":2.91},{"d":"2026-04-19","t":-5.24,"lo":-3.22,"hi":2.88},{"d":"2026-04-26","t":-6.05,"lo":-2.43,"hi":3.31},{"d":"2026-05-03","t":-4.9,"lo":-3.54,"hi":4.32},{"d":"2026-05-10","t":-5.41,"lo":-3.64,"hi":4.71},{"d":"2026-05-17","t":-3.86,"lo":-5.37,"hi":5.09},{"d":"2026-05-24","t":-3.75,"lo":-4.97,"hi":4.52},{"d":"2026-05-31","t":-4.12,"lo":-3.27,"hi":2.51},{"d":"2026-06-07","t":-3.56,"lo":-4.25,"hi":2.48},{"d":"2026-06-14","t":-4.56,"lo":-2.83,"hi":2.58},{"d":"2026-06-21","t":-5.88,"lo":-2.12,"hi":4.88},{"d":"2026-06-28","t":-5.05,"lo":-3.78,"hi":3.73},{"d":"2026-07-05","t":-4.68,"lo":-3.17,"hi":3.22},{"d":"2026-07-12","t":-3.82,"lo":-2.58,"hi":2.73},{"d":"2026-07-19","t":-1.83,"lo":-5.05,"hi":2.97},{"d":"2026-07-26","t":-2.71,"lo":-2.8,"hi":1.96},{"d":"2026-08-02","t":-1.48,"lo":-2.31,"hi":2.5},{"d":"2026-08-09","t":-3.73,"lo":-2.8,"hi":2.28},{"d":"2026-08-23","t":-4.96,"lo":-2.65,"hi":3.17},{"d":"2026-08-30","t":-6.6,"lo":-4.63,"hi":4.51},{"d":"2026-09-06","t":-6.53,"lo":-6.0,"hi":4.58},{"d":"2026-09-13","t":-5.66,"lo":-6.07,"hi":3.56},{"d":"2026-09-20","t":-5.48,"lo":-5.47,"hi":3.68},{"d":"2026-09-27","t":-3.05,"lo":-5.19,"hi":3.47},{"d":"2026-10-04","t":-4.43,"lo":-5.24,"hi":3.93},{"d":"2026-10-11","t":-4.89,"lo":-5.56,"hi":5.08}],"units":[{"name":"Both tunnels into Manhattan (combined)","v":-3.26,"after":-4.46,"noise":6.3},{"name":"Queens-Midtown Tunnel (into Manhattan)","v":-2.37,"after":-4.66,"noise":5.6},{"name":"Hugh L. Carey Tunnel (into Manhattan)","v":-4.52,"after":-4.48,"noise":8.9},{"name":"Queens-Midtown Tunnel (out of Manhattan)","v":-2.94,"after":-2.81,"noise":8.6},{"name":"Hugh L. Carey Tunnel (out of Manhattan)","v":-3.99,"after":-4.89,"noise":8.7},{"name":"Henry Hudson Bridge (into Manhattan)","v":0.72,"after":1.36,"noise":5.4},{"name":"RFK Bridge from Bronx (into Manhattan/Queens)","v":3.14,"after":4.67,"noise":4.1}],"placebo":{"min":-2.18,"max":3.5,"n":10},"robust":[{"spec":"Main: all weeks, 2023-24 baseline","v":-3.26,"post":-3.77,"lo":-2.18,"hi":3.5,"p":0.18},{"spec":"All weeks, baseline from Jul 2022","v":-3.35,"post":-3.82,"lo":-3.08,"hi":5.55,"p":0.18},{"spec":"Tue-Thu, holiday periods removed","v":-4.09,"post":-4.85,"lo":-2.35,"hi":3.75,"p":0.09},{"spec":"Tue-Thu clean, baseline from Jul 2022","v":-4.04,"post":-4.78,"lo":-2.84,"hi":5.43,"p":0.18},{"spec":"Tue-Thu clean, without donor Cross Bay Bridge","v":-4.17,"post":-5.24,"lo":-2.42,"hi":3.68,"p":0.11},{"spec":"Tue-Thu clean, without donor Marine Parkway Bridge","v":-4.0,"post":-4.71,"lo":-2.2,"hi":3.92,"p":0.11},{"spec":"Tue-Thu clean, without donor Verrazzano - Narrows Bridge","v":-4.29,"post":-4.99,"lo":-2.59,"hi":3.51,"p":0.11},{"spec":"Tue-Thu clean, without donor Throgs Neck Bridge","v":-3.96,"post":-4.55,"lo":-1.97,"hi":3.22,"p":0.11},{"spec":"Tue-Thu clean, without donor Bronx - Whitestone Bridge","v":-4.01,"post":-4.72,"lo":-2.21,"hi":3.91,"p":0.11}],"profile":{"Buses / motorcycles":[23.5,22.5,20.5,21.1,18.5,18.2,20.2,15.3,12.0,13.3,12.4,8.5,9.7,8.4,5.8,7.4,7.1,5.1,7.1,4.9,4.5,7.4,7.2,6.2,10.1,11.1,10.9,15.1,16.2,19.6,25.4,30.9,47.6,51.7,68.7,79.3,93.0,121.6,130.1,139.6,145.3,152.4,150.3,163.8,180.9,189.5,190.1,189.2,178.0,175.3,164.5,164.3,147.0,136.7,129.3,125.6,119.6,112.0,107.2,102.4,98.3,89.0,86.1,85.7,82.5,77.6,76.1,73.8,71.1,70.7,74.2,74.4,72.7,72.8,74.4,75.9,77.9,81.0,84.3,85.2,92.2,97.8,106.9,113.9,117.3,117.0,112.7,113.1,117.3,123.4,123.8,127.8,132.3,139.9,143.8,143.1,141.6,134.3,134.3,131.9,128.2,130.6,125.4,119.2,115.1,109.3,104.5,105.3,100.9,99.6,96.5,94.6,92.2,88.1,76.8,72.6,70.1,65.0,61.8,59.2,54.8,50.2,49.6,47.6,46.7,46.8,42.8,41.6,41.0,39.9,41.0,41.0,35.3,36.4,36.2,36.2,35.3,35.9,33.6,30.7,32.5,29.9,28.6,25.6],"Cars, pickups, vans":[817.3,706.5,595.9,521.7,478.4,430.0,394.3,365.5,345.7,330.1,312.0,297.0,280.5,278.4,271.5,280.3,289.2,289.7,288.1,302.7,320.7,358.6,403.8,446.5,488.6,577.0,741.0,972.5,1364.9,1460.1,827.4,969.5,1285.5,1639.6,1997.2,2178.4,2281.9,2510.2,2758.1,2948.9,3084.0,3063.5,3019.2,3082.2,3172.4,3233.2,3298.7,3317.3,3313.2,3340.6,3334.3,3310.5,3297.3,3244.3,3159.2,3141.6,3093.5,3011.0,2976.8,2934.3,2835.5,2739.7,2701.8,2667.5,2634.8,2604.1,2529.3,2500.3,2512.7,2498.4,2486.0,2464.0,2409.3,2387.2,2385.4,2364.8,2338.4,2345.4,2315.8,2315.0,2340.7,2349.9,2352.5,2381.0,2385.2,2431.2,2485.5,2492.8,2502.4,2486.6,2480.4,2511.9,2550.7,2533.5,2528.5,2513.5,2487.9,2476.9,2493.7,2456.3,2409.6,2414.7,2393.0,2395.7,2436.7,2442.5,2411.2,2400.8,2377.4,2371.7,2391.7,2351.3,2289.8,2221.2,2106.2,2062.5,2018.1,1932.6,1858.7,1785.4,1687.2,1643.4,1592.8,1517.1,1460.5,1415.3,1794.1,1698.4,1648.7,1607.1,1583.9,1539.4,1490.3,1507.7,1522.2,1497.2,1436.6,1317.9,1188.6,1075.5,1019.7,980.2,926.1,913.9],"Taxi / for-hire":[1107.6,1037.8,991.1,937.0,887.9,843.1,783.2,715.6,663.9,613.2,553.7,507.4,466.4,424.3,396.7,377.4,359.2,340.3,326.2,315.2,312.4,318.7,324.3,329.9,352.5,390.4,407.5,432.4,496.1,536.7,565.3,614.1,657.8,709.3,799.3,833.8,854.2,913.1,985.5,1073.5,1192.7,1225.6,1196.1,1235.1,1300.6,1325.3,1355.4,1360.9,1329.7,1387.4,1468.9,1503.1,1589.9,1603.0,1558.6,1590.9,1619.6,1587.8,1631.2,1637.3,1563.6,1522.5,1526.8,1512.3,1498.5,1488.6,1414.1,1411.5,1423.0,1417.6,1429.9,1434.3,1391.7,1397.7,1423.8,1410.7,1401.2,1408.9,1376.1,1374.8,1395.7,1390.6,1398.7,1409.1,1384.0,1397.7,1421.8,1419.7,1450.3,1461.2,1438.2,1455.5,1482.0,1493.8,1525.4,1560.6,1545.8,1536.6,1578.8,1584.4,1585.4,1611.1,1595.1,1564.8,1584.5,1609.5,1622.2,1664.1,1687.2,1701.0,1751.2,1769.2,1787.3,1829.4,1813.1,1852.5,1902.7,1868.3,1849.8,1875.5,1823.1,1788.8,1794.2,1789.9,1791.5,1812.8,1793.9,1821.0,1861.1,1861.4,1879.5,1895.1,1847.6,1827.8,1844.5,1798.5,1765.4,1750.6,1661.5,1519.0,1507.5,1472.3,1422.4,1446.7],"Trucks":[50.0,48.4,50.8,49.0,48.2,49.0,49.1,50.7,51.9,53.4,54.9,56.9,55.3,56.2,60.0,65.0,65.8,69.2,67.1,68.8,76.1,80.5,91.4,96.9,100.5,105.4,117.6,130.7,149.9,171.9,173.8,201.6,240.0,266.6,286.3,296.4,300.5,307.0,315.6,321.1,327.8,335.7,331.8,331.1,341.4,344.2,342.6,341.5,342.8,350.6,356.5,353.6,353.6,353.5,346.3,345.7,345.0,333.0,326.7,324.2,315.0,304.0,297.2,287.0,279.6,275.8,268.4,264.0,263.9,256.8,251.0,249.4,247.9,240.3,241.5,234.0,227.2,226.5,218.9,215.5,213.2,206.6,200.6,199.9,192.5,188.4,183.2,177.5,175.2,171.3,167.9,162.4,160.0,156.1,152.9,149.2,143.4,138.5,136.0,130.3,123.3,120.0,111.3,105.1,100.7,96.3,88.5,86.9,83.6,82.8,81.9,80.3,77.8,77.8,75.0,74.6,78.0,75.7,74.2,72.7,71.2,69.5,70.3,69.6,66.6,65.0,67.1,63.9,64.1,65.6,67.4,62.8,56.8,55.2,54.3,52.2,53.5,51.3,49.1,45.9,48.4,47.9,48.6,49.9],"All vehicles":[1998.5,1815.2,1658.4,1528.9,1433.0,1340.3,1246.8,1146.9,1073.5,1010.0,933.1,869.7,811.8,767.3,733.9,730.1,721.2,704.4,688.5,691.5,713.7,765.3,826.8,879.5,951.6,1083.9,1277.0,1550.8,2027.2,2188.3,1592.0,1816.0,2230.9,2667.3,3151.4,3387.8,3529.6,3851.9,4189.2,4483.1,4749.8,4777.3,4697.3,4812.2,4995.2,5092.1,5186.8,5208.9,5163.7,5254.0,5324.2,5331.6,5387.7,5337.5,5193.6,5203.8,5177.7,5043.7,5041.9,4998.3,4812.3,4655.2,4612.0,4552.4,4495.4,4446.0,4287.9,4249.5,4270.7,4243.5,4241.1,4222.0,4121.5,4098.1,4125.2,4085.5,4044.6,4061.8,3995.1,3990.5,4041.8,4044.9,4058.8,4104.0,4079.1,4134.3,4203.3,4203.1,4245.2,4242.6,4210.2,4257.7,4325.0,4323.3,4350.5,4366.3,4318.6,4286.4,4342.8,4303.0,4246.4,4276.4,4224.9,4184.8,4237.0,4257.6,4226.5,4257.1,4249.1,4255.2,4321.3,4295.5,4247.0,4216.6,4071.0,4062.2,4068.9,3941.6,3844.5,3792.7,3636.2,3552.0,3506.8,3424.2,3365.2,3340.0,3698.0,3624.9,3614.9,3574.0,3571.7,3538.3,3430.0,3427.0,3457.2,3384.1,3290.8,3155.7,2932.8,2671.0,2608.1,2530.3,2425.8,2436.1]},"groups":["Buses / motorcycles","Cars, pickups, vans","Taxi / for-hire","Trucks","All vehicles"],"jumps":[{"g":"Buses / motorcycles","b":"05:00","ch":"Overnight -> Peak","j":57.6,"lo":54.7,"hi":60.5,"rmin":-6.6,"rmax":193.8,"fake":13.8,"clears":true,"same":false},{"g":"Buses / motorcycles","b":"21:00","ch":"Peak -> Overnight","j":2.1,"lo":0.9,"hi":3.3,"rmin":-7.6,"rmax":6.9,"fake":13.8,"clears":false,"same":false},{"g":"Cars, pickups, vans","b":"05:00","ch":"Overnight -> Peak","j":-31.4,"lo":-32.0,"hi":-30.9,"rmin":-63.6,"rmax":15.5,"fake":4.8,"clears":true,"same":false},{"g":"Cars, pickups, vans","b":"21:00","ch":"Peak -> Overnight","j":27.9,"lo":27.0,"hi":28.7,"rmin":27.9,"rmax":34.7,"fake":4.8,"clears":true,"same":true},{"g":"Taxi / for-hire","b":"05:00","ch":"Overnight -> Peak","j":13.1,"lo":12.4,"hi":13.8,"rmin":-9.4,"rmax":51.2,"fake":5.1,"clears":true,"same":false},{"g":"Taxi / for-hire","b":"21:00","ch":"Peak -> Overnight","j":4.2,"lo":3.7,"hi":4.7,"rmin":-0.8,"rmax":6.5,"fake":5.1,"clears":false,"same":false},{"g":"Trucks","b":"05:00","ch":"Overnight -> Peak","j":21.4,"lo":20.4,"hi":22.3,"rmin":-10.5,"rmax":47.8,"fake":5.7,"clears":true,"same":false},{"g":"Trucks","b":"21:00","ch":"Peak -> Overnight","j":4.6,"lo":3.6,"hi":5.9,"rmin":1.7,"rmax":7.2,"fake":5.7,"clears":false,"same":true},{"g":"All vehicles","b":"05:00","ch":"Overnight -> Peak","j":-13.8,"lo":-14.3,"hi":-13.1,"rmin":-47.5,"rmax":34.3,"fake":4.1,"clears":true,"same":false},{"g":"All vehicles","b":"21:00","ch":"Peak -> Overnight","j":14.6,"lo":14.1,"hi":15.1,"rmin":12.3,"rmax":19.1,"fake":4.1,"clears":true,"same":true}],"zone":[{"m":"2025-01","per_day":471794.0,"share":11.56,"days":27},{"m":"2025-02","per_day":477354.0,"share":11.8,"days":28},{"m":"2025-03","per_day":493047.0,"share":12.0,"days":31},{"m":"2025-04","per_day":501873.0,"share":11.66,"days":30},{"m":"2025-05","per_day":512925.0,"share":11.6,"days":31},{"m":"2025-06","per_day":502433.0,"share":11.9,"days":30},{"m":"2025-07","per_day":488965.0,"share":11.63,"days":31},{"m":"2025-08","per_day":484030.0,"share":12.51,"days":31},{"m":"2025-09","per_day":503934.0,"share":11.65,"days":30},{"m":"2025-10","per_day":507964.0,"share":11.16,"days":31},{"m":"2025-11","per_day":496765.0,"share":11.2,"days":30},{"m":"2025-12","per_day":479158.0,"share":10.94,"days":31},{"m":"2026-01","per_day":431188.0,"share":11.01,"days":31},{"m":"2026-02","per_day":431152.0,"share":11.09,"days":28},{"m":"2026-03","per_day":475608.0,"share":11.41,"days":31},{"m":"2026-04","per_day":489988.0,"share":11.53,"days":30},{"m":"2026-05","per_day":494334.0,"share":11.45,"days":31},{"m":"2026-06","per_day":492966.0,"share":11.79,"days":30},{"m":"2026-07","per_day":475462.0,"share":11.85,"days":31},{"m":"2026-08","per_day":468047.0,"share":12.18,"days":31},{"m":"2026-09","per_day":480366.0,"share":11.61,"days":30},{"m":"2026-10","per_day":499082.0,"share":11.31,"days":31}],"recon":[{"m":"2025-01","t":"Hugh L. Carey Tunnel","ratio":1.042},{"m":"2025-02","t":"Hugh L. Carey Tunnel","ratio":1.032},{"m":"2025-03","t":"Hugh L. Carey Tunnel","ratio":1.023},{"m":"2025-04","t":"Hugh L. Carey Tunnel","ratio":1.01},{"m":"2025-05","t":"Hugh L. Carey Tunnel","ratio":1.012},{"m":"2025-06","t":"Hugh L. Carey Tunnel","ratio":1.034},{"m":"2025-07","t":"Hugh L. Carey Tunnel","ratio":1.033},{"m":"2025-08","t":"Hugh L. Carey Tunnel","ratio":1.016},{"m":"2025-09","t":"Hugh L. Carey Tunnel","ratio":1.035},{"m":"2025-10","t":"Hugh L. Carey Tunnel","ratio":1.026},{"m":"2025-11","t":"Hugh L. Carey Tunnel","ratio":1.028},{"m":"2025-12","t":"Hugh L. Carey Tunnel","ratio":1.024},{"m":"2026-01","t":"Hugh L. Carey Tunnel","ratio":1.018},{"m":"2026-02","t":"Hugh L. Carey Tunnel","ratio":1.023},{"m":"2026-03","t":"Hugh L. Carey Tunnel","ratio":0.998},{"m":"2026-04","t":"Hugh L. Carey Tunnel","ratio":0.992},{"m":"2026-05","t":"Hugh L. Carey Tunnel","ratio":0.998},{"m":"2026-06","t":"Hugh L. Carey Tunnel","ratio":1.009},{"m":"2026-07","t":"Hugh L. Carey Tunnel","ratio":0.992},{"m":"2026-08","t":"Hugh L. Carey Tunnel","ratio":1.057},{"m":"2026-09","t":"Hugh L. Carey Tunnel","ratio":1.022},{"m":"2026-10","t":"Hugh L. Carey Tunnel","ratio":0.998},{"m":"2025-01","t":"Queens Midtown Tunnel","ratio":1.028},{"m":"2025-02","t":"Queens Midtown Tunnel","ratio":1.026},{"m":"2025-03","t":"Queens Midtown Tunnel","ratio":1.024},{"m":"2025-04","t":"Queens Midtown Tunnel","ratio":0.965},{"m":"2025-05","t":"Queens Midtown Tunnel","ratio":1.006},{"m":"2025-06","t":"Queens Midtown Tunnel","ratio":1.019},{"m":"2025-07","t":"Queens Midtown Tunnel","ratio":1.026},{"m":"2025-08","t":"Queens Midtown Tunnel","ratio":1.026},{"m":"2025-09","t":"Queens Midtown Tunnel","ratio":1.028},{"m":"2025-10","t":"Queens Midtown Tunnel","ratio":1.012},{"m":"2025-11","t":"Queens Midtown Tunnel","ratio":1.015},{"m":"2025-12","t":"Queens Midtown Tunnel","ratio":1.026},{"m":"2026-01","t":"Queens Midtown Tunnel","ratio":1.024},{"m":"2026-02","t":"Queens Midtown Tunnel","ratio":1.023},{"m":"2026-03","t":"Queens Midtown Tunnel","ratio":1.022},{"m":"2026-04","t":"Queens Midtown Tunnel","ratio":1.019},{"m":"2026-05","t":"Queens Midtown Tunnel","ratio":1.024},{"m":"2026-06","t":"Queens Midtown Tunnel","ratio":1.027},{"m":"2026-07","t":"Queens Midtown Tunnel","ratio":1.026},{"m":"2026-08","t":"Queens Midtown Tunnel","ratio":1.025},{"m":"2026-09","t":"Queens Midtown Tunnel","ratio":1.024},{"m":"2026-10","t":"Queens Midtown Tunnel","ratio":1.024}],"start":"2025-01-05","eff":-4.0,"pmin":0.09};
+const NS='http://www.w3.org/2000/svg', $=s=>document.querySelector(s), tip=$('#tip');
+const el=(n,a={},p)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const fp=(v,d=1)=>{if(v==null)return 'n/a';const r=Math.abs(v).toFixed(d);return (+r>0?(v>0?'+':'−'):'')+r+'%';};
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fd=s=>{const [y,m,d]=s.split('-');return MON[+m-1]+' '+(+d)+', '+y;};
+function showTip(h,x,y){tip.innerHTML=h;tip.style.display='block';const w=tip.offsetWidth,hh=tip.offsetHeight;tip.style.left=Math.max(8,Math.min(innerWidth-w-8,x+14))+'px';tip.style.top=Math.max(8,Math.min(innerHeight-hh-8,y+14))+'px';}
+const hideTip=()=>tip.style.display='none';
+const row=(k,v)=>`<div class="r"><span>${k}</span><b>${v}</b></div>`;
+function nice(min,max,n=5){const raw=(max-min)/n||1,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,s=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;const a=Math.floor(min/s)*s,b=Math.ceil(max/s)*s,t=[];for(let v=a;v<=b+s/2;v+=s)t.push(+v.toFixed(10));return {min:a,max:b,t};}
+function legend(host,items){host.innerHTML=items.map(i=>`<span><i class="${i.box?'box':''}" style="${i.box?'':'background:'+i.color}"></i>${i.name}</span>`).join('');}
+
+/* generic line chart. cfg: xs, series[{name,color,vals,w}], band{lo,hi}, xticks[{x,l}], yfmt, tip(i), vlines[{x,l}], aria, h, ymin, ymax */
+function lineChart(host,cfg){
+  host.innerHTML='';const W=Math.max(300,Math.round(host.clientWidth||720)),H=cfg.h||300,m={l:46,r:14,t:16,b:30};
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':cfg.aria,tabindex:0},host);
+  let lo=Infinity,hi=-Infinity;const all=[];cfg.series.forEach(s=>s.vals.forEach(v=>v!=null&&all.push(v)));if(cfg.band){cfg.band.lo.forEach(v=>v!=null&&all.push(v));cfg.band.hi.forEach(v=>v!=null&&all.push(v));}
+  lo=Math.min(...all);hi=Math.max(...all);if(cfg.ymin!=null)lo=Math.min(lo,cfg.ymin);if(cfg.ymax!=null)hi=Math.max(hi,cfg.ymax);
+  const ax=nice(lo,hi,4),x0=cfg.xs[0],x1=cfg.xs[cfg.xs.length-1];
+  const X=v=>m.l+(W-m.l-m.r)*(v-x0)/((x1-x0)||1),Y=v=>H-m.b-(H-m.t-m.b)*(v-ax.min)/((ax.max-ax.min)||1);
+  ax.t.forEach(t=>{el('line',{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),class:'gl'},svg);const tx=el('text',{x:m.l-8,y:Y(t)+4,class:'tk e'},svg);tx.textContent=cfg.yfmt(t);});
+  el('line',{x1:m.l,x2:W-m.r,y1:H-m.b,y2:H-m.b,class:'ax'},svg);
+  const maxT=Math.max(2,Math.floor((W-m.l-m.r)/62));let xt=cfg.xticks||[];if(xt.length>maxT){const k=Math.ceil(xt.length/maxT);xt=xt.filter((_,i)=>i%k===0);}xt.forEach(t=>{const tx=el('text',{x:X(t.x),y:H-m.b+18,class:'tk c'},svg);tx.textContent=t.l;});
+  if(cfg.band){let d='';const pts=cfg.xs.map((x,i)=>[x,cfg.band.hi[i],cfg.band.lo[i]]).filter(p=>p[1]!=null&&p[2]!=null);
+    pts.forEach((p,i)=>d+=(i?'L':'M')+X(p[0])+' '+Y(p[1]));pts.slice().reverse().forEach(p=>d+='L'+X(p[0])+' '+Y(p[2]));el('path',{d:d+'Z',style:'fill:var(--band)'},svg);}
+  if(ax.min<0&&ax.max>0)el('line',{x1:m.l,x2:W-m.r,y1:Y(0),y2:Y(0),class:'ax',style:'stroke:var(--ink-2)'},svg);
+  (cfg.vlines||[]).forEach(v=>{el('line',{x1:X(v.x),x2:X(v.x),y1:m.t,y2:H-m.b,class:'ref'},svg);if(v.l){const t=el('text',{x:X(v.x)+(v.dx||6),y:m.t+(v.dy||10),class:'lb b',style:v.anchor?'text-anchor:'+v.anchor:''},svg);t.textContent=v.l;}});
+  cfg.series.forEach(s=>{let d='',pen=false;s.vals.forEach((v,i)=>{if(v==null){pen=false;return;}d+=(pen?'L':'M')+X(cfg.xs[i]).toFixed(1)+' '+Y(v).toFixed(1);pen=true;});
+    el('path',{d,fill:'none',style:`stroke:${s.color};stroke-width:${s.w||2.4};stroke-linejoin:round;stroke-linecap:round`},svg);});
+  const cross=el('line',{y1:m.t,y2:H-m.b,class:'cross',style:'display:none'},svg),dots=cfg.series.map(s=>el('circle',{r:4.5,style:`fill:${s.color};stroke:var(--surface);stroke-width:2;display:none`},svg));
+  let cur=-1;
+  function show(i,cx,cy){cur=i;cross.setAttribute('x1',X(cfg.xs[i]));cross.setAttribute('x2',X(cfg.xs[i]));cross.style.display='';
+    dots.forEach((d,k)=>{const v=cfg.series[k].vals[i];if(v==null){d.style.display='none';return;}d.setAttribute('cx',X(cfg.xs[i]));d.setAttribute('cy',Y(v));d.style.display='';});showTip(cfg.tip(i),cx,cy);}
+  function hide(){cross.style.display='none';dots.forEach(d=>d.style.display='none');hideTip();cur=-1;}
+  const ov=el('rect',{x:m.l,y:m.t,width:W-m.l-m.r,height:H-m.t-m.b,fill:'transparent'},svg);
+  ov.addEventListener('pointermove',e=>{const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)*W/r.width;let b=0,bd=1e9;cfg.xs.forEach((x,i)=>{const dd=Math.abs(X(x)-px);if(dd<bd){bd=dd;b=i;}});show(b,e.clientX,e.clientY);});
+  ov.addEventListener('pointerleave',hide);
+  svg.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=Math.max(0,Math.min(cfg.xs.length-1,(cur<0?0:cur)+(e.key==='ArrowRight'?1:-1)));const r=svg.getBoundingClientRect();show(n,r.left+X(cfg.xs[n])*r.width/W,r.top+r.height/3);}if(e.key==='Escape')hide();});
+  svg.addEventListener('blur',hide);
+}
+/* bars */
+function barChart(host,cfg){host.innerHTML='';const W=Math.max(300,Math.round(host.clientWidth||720)),H=240,m={l:46,r:10,t:12,b:30};const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':cfg.aria},host);
+  const ax=nice(0,Math.max(...cfg.vals),4),n=cfg.vals.length,bw=(W-m.l-m.r)/n;const Y=v=>H-m.b-(H-m.t-m.b)*v/ax.max;
+  ax.t.forEach(t=>{el('line',{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),class:'gl'},svg);const tx=el('text',{x:m.l-8,y:Y(t)+4,class:'tk e'},svg);tx.textContent=cfg.yfmt(t);});
+  cfg.vals.forEach((v,i)=>{const x=m.l+i*bw+bw*.14;const r=el('rect',{x,y:Y(v),width:bw*.72,height:H-m.b-Y(v),rx:2,style:'fill:var(--s1)'},svg);
+    r.addEventListener('pointermove',e=>showTip(cfg.tip(i),e.clientX,e.clientY));r.addEventListener('pointerleave',hideTip);
+    if(i%Math.max(1,Math.ceil(n/Math.max(2,Math.floor((W-m.l-m.r)/62))))===0){const tx=el('text',{x:x+bw*.36,y:H-m.b+18,class:'tk c'},svg);tx.textContent=cfg.labels[i];}});
+  el('line',{x1:m.l,x2:W-m.r,y1:H-m.b,y2:H-m.b,class:'ax'},svg);}
+/* dot rows */
+function dotRows(host,rows,o){const rng=nice(o.min,o.max,o.nt||(host.clientWidth<460?2:5)),pc=v=>100*(v-rng.min)/(rng.max-rng.min);let h='<div class="rows">';
+  rows.forEach(r=>{h+=`<div class="row" title="${(r.title||'').replace(/"/g,'&quot;')}"><div class="l">${r.label}</div><div class="tr">`+(r.lo!=null?`<div class="bd" style="left:${pc(r.lo)}%;width:${pc(r.hi)-pc(r.lo)}%"></div>`:'')+`<div class="z" style="left:${pc(0)}%"></div><div class="dt" style="left:${pc(r.v)}%;background:${r.color||'var(--s1)'}"></div></div><div class="v">${fp(r.v)}</div></div>`;});
+  h+='</div><div class="axisrow"><div></div><div class="ticks">'+rng.t.map(t=>`<span style="left:${pc(t)}%">${t}%</span>`).join('')+'</div><div></div></div>';host.innerHTML=h;}
+function table(host,cols,rows){host.innerHTML='<table><thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>`<td>${c}</td>`).join('')+'</tr>').join('')+'</tbody></table>';}
+
+/* findings */
+$('#findings').innerHTML=['q1','q2','q3'].map((k,i)=>{const f=D.F[k];return `<article class="card find"><div class="q">Question ${i+1}</div><div class="n">${f.n}</div><h3>${f.h}</h3><p>${f.t}</p><div class="a">${f.a}</div></article>`;}).join('');
+
+/* event study */
+function drawEvent(){const ev=D.event;const xs=ev.map((_,i)=>i);const tk=[];let last='';ev.forEach((e,i)=>{const [y,m]=e.d.split('-');if([1,4,7,10].includes(+m)&&(y+m)!==last){last=y+m;tk.push({x:i,l:MON[+m-1]+' '+String(y).slice(2)});}});
+  const si=ev.findIndex(e=>e.d>=D.start);
+  legend($('#lgEvent'),[{name:'Both tunnels, inbound',color:'var(--s1)'},{name:'Never-tolled crossings (10th–90th percentile)',box:true}]);
+  lineChart($('#event'),{xs,series:[{name:'Tunnels',color:'var(--s1)',vals:ev.map(e=>e.t),w:2.6}],band:{lo:ev.map(e=>e.lo),hi:ev.map(e=>e.hi)},xticks:tk.filter((_,i)=>i%2===0),yfmt:v=>fp(v,0),
+    vlines:[{x:si,l:'Toll starts Jan 5, 2025',dx:6,dy:12}],ymax:2,aria:'Line chart of weekly traffic at the two tunnels relative to expected, before and after the toll began, against a grey band for never-tolled crossings.',
+    tip:i=>`<div class="t">Week of ${fd(ev[i].d)}</div>`+row('Tunnels',fp(ev[i].t))+(ev[i].lo!=null?row('Never-tolled range',fp(ev[i].lo)+' to '+fp(ev[i].hi)):'')});}
+
+/* units */
+function drawUnits(){const col=n=>n.includes('Bridge')?'var(--s2)':n.includes('combined')?'var(--s1)':n.includes('out of')?'var(--gray)':'var(--s1)';
+  const order=['Both tunnels into Manhattan (combined)','Queens-Midtown Tunnel (into Manhattan)','Hugh L. Carey Tunnel (into Manhattan)','Queens-Midtown Tunnel (out of Manhattan)','Hugh L. Carey Tunnel (out of Manhattan)','Henry Hudson Bridge (into Manhattan)','RFK Bridge from Bronx (into Manhattan/Queens)'];
+  const U=order.map(n=>D.units.find(u=>u.name===n)).filter(Boolean);const all=U.map(u=>u.v).concat([D.placebo.min,D.placebo.max]);
+  dotRows($('#units'),U.map(u=>({label:u.name.replace(' (into Manhattan)',' in').replace(' (out of Manhattan)',' out').replace(' (combined)','').replace('Both tunnels into Manhattan','Both tunnels in').replace(' (into Manhattan/Queens)',' in'),v:u.v,lo:D.placebo.min,hi:D.placebo.max,color:col(u.name),title:u.name})),{min:Math.min(...all)-1,max:Math.max(...all)+1});}
+
+/* robustness */
+function drawRobust(){const R=D.robust;const all=R.flatMap(r=>[r.v,r.lo,r.hi]);
+  dotRows($('#robust'),R.map(r=>({label:r.spec.replace('Tue-Thu clean, without donor ','Tue–Thu, no ').replace('Tue-Thu, holiday periods removed','Tue–Thu, holidays out').replace('Tue-Thu clean, baseline from Jul 2022','Tue–Thu, baseline Jul 2022').replace('Main: all weeks, 2023-24 baseline','Main (all weeks)').replace(' Bridge',''),v:r.v,lo:r.lo,hi:r.hi,title:r.spec+': placebo range '+fp(r.lo)+' to '+fp(r.hi)+', p='+r.p})),{min:Math.min(...all)-1,max:Math.max(...all)+1});
+  table($('#robTable'),['Setup','Tunnels, first year','All weeks since','Never-tolled range','p-value'],R.map(r=>[r.spec,fp(r.v,2),fp(r.post,2),fp(r.lo)+' to '+fp(r.hi),r.p.toFixed(2)]));}
+
+/* timing */
+let tcur=null;
+function drawTiming(){const G=D.groups;if(tcur===null){tcur=G.indexOf('Cars, pickups, vans');if(tcur<0)tcur=0;}const seg=$('#grpSeg');
+  function draw(){seg.innerHTML='';G.forEach((g,i)=>{const b=document.createElement('button');b.type='button';b.textContent=g;b.setAttribute('aria-pressed',i===tcur);b.onclick=()=>{tcur=i;draw();};seg.appendChild(b);});
+    const g=G[tcur],y=D.profile[g],xs=y.map((_,i)=>i/6),J=D.jumps.filter(j=>j.g===g);
+    const vl=J.map(j=>{const [h,mi]=j.b.split(':').map(Number);return {x:h+mi/60,l:j.b+' '+fp(j.j,0),dx:j.b==='21:00'?-6:6,anchor:j.b==='21:00'?'end':'start',dy:14};});
+    lineChart($('#prof'),{xs,series:[{name:g,color:'var(--s1)',vals:y,w:2.6}],xticks:[0,3,6,9,12,15,18,21,24].filter(h=>h<24).map(h=>({x:h,l:h+':00'})),yfmt:v=>v.toLocaleString(),vlines:vl,ymin:0,h:300,
+      aria:'Line chart of average vehicles entering the zone per 10 minutes through the day for '+g+', with the two price changes marked.',tip:i=>{const h=Math.floor(i/6),mi=(i%6)*10;return `<div class="t">${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}</div>`+row('Entries / 10 min',y[i].toLocaleString());}});
+    const c=J.find(j=>j.b==='21:00'),a=J.find(j=>j.b==='05:00');
+    const verdict=j=>!j?'':(j.same&&j.clears?`<span class="ok">stable</span> (${fp(j.rmin,0)} to ${fp(j.rmax,0)} across settings)`:`<span class="warn">not stable</span> (${fp(j.rmin,0)} to ${fp(j.rmax,0)} across settings)`);
+    $('#profNote').innerHTML=`<b>21:00, price drops:</b> entries jump ${fp(c&&c.j,0)} — ${verdict(c)}. <b>05:00, price rises:</b> ${fp(a&&a.j,0)} — ${verdict(a)}.`;}
+  draw();
+  table($('#jumpTable'),['Group','Boundary','Price change','Jump','90% range','Settings range','Beats fake boundaries'],D.jumps.map(j=>[j.g,j.b,j.ch,fp(j.j,1),fp(j.lo,0)+' to '+fp(j.hi,0),fp(j.rmin,0)+' to '+fp(j.rmax,0),j.clears?'<span class="ok">yes</span>':'<span class="warn">no</span>']));}
+
+/* zone */
+function drawZone(){const Z=D.zone;const lab=Z.map(z=>{const [y,m]=z.m.split('-');return MON[+m-1]+' '+String(y).slice(2);});
+  barChart($('#zone'),{vals:Z.map(z=>z.per_day),labels:lab,yfmt:v=>(v/1000)+'k',aria:'Bar chart of average tolled vehicles per day by month.',tip:i=>`<div class="t">${lab[i]}</div>`+row('Tolled per day',Z[i].per_day.toLocaleString())+row('Days',Z[i].days)});
+  const xs=Z.map((_,i)=>i);lineChart($('#share'),{xs,series:[{name:'Share',color:'var(--s2)',vals:Z.map(z=>z.share)}],xticks:xs.filter(i=>i%3===0).map(i=>({x:i,l:lab[i]})),yfmt:v=>v+'%',ymin:0,h:240,aria:'Line chart of the share of zone entries on untolled roads by month.',tip:i=>`<div class="t">${lab[i]}</div>`+row('On untolled roads',Z[i].share.toFixed(1)+'%')});
+  const T=[...new Set(D.recon.map(r=>r.t))],M=[...new Set(D.recon.map(r=>r.m))].sort(),cols=['var(--s1)','var(--s2)'];
+  legend($('#lgRecon'),T.map((t,i)=>({name:t,color:cols[i]})));
+  const ml=M.map(m=>{const [y,mm]=m.split('-');return MON[+mm-1]+' '+String(y).slice(2);});
+  lineChart($('#recon'),{xs:M.map((_,i)=>i),series:T.map((t,i)=>({name:t,color:cols[i],vals:M.map(m=>{const r=D.recon.find(x=>x.t===t&&x.m===m);return r?r.ratio:null;})})),xticks:M.map((_,i)=>i).filter(i=>i%3===0).map(i=>({x:i,l:ml[i]})),yfmt:v=>v.toFixed(2),ymin:.95,ymax:1.08,h:240,
+    vlines:[],aria:'Line chart of the ratio of zone-file entries to bridge-and-tunnel counts at each tunnel by month.',tip:i=>`<div class="t">${ml[i]}</div>`+T.map(t=>{const r=D.recon.find(x=>x.t===t&&x.m===M[i]);return row(t,r?r.ratio.toFixed(3):'n/a');}).join('')});}
+
+function render(){drawEvent();drawUnits();drawRobust();drawTiming();drawZone();}
+render();let lw=innerWidth,rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(innerWidth!==lw){lw=innerWidth;render();}},150);});
+
+/* theme */
+(function(){const b=$('#theme'),r=document.documentElement;const set=t=>{r.setAttribute('data-theme',t);b.textContent=t==='dark'?'Light':'Dark';};
+  set(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');b.onclick=()=>set(r.getAttribute('data-theme')==='dark'?'light':'dark');})();
+</script>
+</body>
+</html>
